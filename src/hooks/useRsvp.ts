@@ -9,8 +9,13 @@ export type FaseRsvp = "cargando" | "listo" | "enviando" | "enviado";
 
 export type Rsvp = {
   fase: FaseRsvp;
-  /** Una entrada por persona del grupo: true = asiste. */
-  asistencia: Record<string, boolean>;
+  /**
+   * Una casilla por persona del grupo, en el mismo orden que `grupo.todos`.
+   * Va por posición y no por nombre a propósito: dos invitados que se llaman
+   * igual (un padre y un hijo, algo corriente) son dos personas y necesitan
+   * dos casillas independientes.
+   */
+  asistencia: boolean[];
   mensaje: string;
   error: string | null;
   /** Si ya había respondido antes, el formulario dice "actualizar", no "confirmar". */
@@ -18,7 +23,9 @@ export type Rsvp = {
   puedeConfirmar: boolean;
   /** Texto que explica por qué está cerrado, o `null` si está abierto. */
   motivoCierre: string | null;
-  alternar: (nombre: string) => void;
+  /** El servidor rechazó la firma del enlace. Se sabe antes de rellenar nada. */
+  enlaceInvalido: boolean;
+  alternar: (indice: number) => void;
   escribirMensaje: (texto: string) => void;
   confirmar: () => Promise<void>;
   limpiar: () => void;
@@ -30,30 +37,34 @@ export type Rsvp = {
  * Regla central: **la hoja de cálculo es la fuente de verdad, pero un fallo de
  * red nunca degrada lo que ya sabíamos.** Si el invitado ya había confirmado y
  * la consulta falla, se conserva la respuesta cacheada en vez de mostrarle un
- * formulario en blanco — ese fue el bug de producción que cerró la primera
- * versión de este proyecto.
+ * formulario en blanco — es un fallo que ya ocurrió en producción, y por eso
+ * la regla está escrita aquí y no en la cabeza de alguien.
+ *
+ * Segunda regla: **la hoja no manda sobre quién está invitado.** Lo que llega
+ * del servidor solo puede marcar o desmarcar a las personas que vienen en el
+ * enlace; un nombre que ya no está en el grupo se ignora.
  */
 export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
   const { grupo, grupoBruto, telefono, firma } = invitado;
 
   // Por defecto se asume que va todo el grupo: es la respuesta más común y
   // deja al invitado solo el trabajo de desmarcar excepciones.
-  const asistenciaInicial = useMemo(
-    () => Object.fromEntries(grupo.todos.map((nombre) => [nombre, true])),
-    [grupo.todos],
-  );
+  const asistenciaInicial = useMemo(() => grupo.todos.map(() => true), [grupo.todos]);
 
-  const [asistencia, setAsistencia] = useState<Record<string, boolean>>(asistenciaInicial);
+  const [asistencia, setAsistencia] = useState<boolean[]>(asistenciaInicial);
   const [mensaje, setMensaje] = useState("");
   const [fase, setFase] = useState<FaseRsvp>("cargando");
   const [error, setError] = useState<string | null>(null);
   const [yaConfirmo, setYaConfirmo] = useState(false);
+  const [enlaceInvalido, setEnlaceInvalido] = useState(false);
 
   const { endpoint } = config;
-  const clavesGrupo = grupo.todos.join("|");
+  // `useInvitado` resuelve la URL una sola vez, así que esta referencia es
+  // estable durante toda la vida de la página y sirve como dependencia.
+  const nombres = grupo.todos;
 
   useEffect(() => {
-    if (!telefono) {
+    if (!telefono || nombres.length === 0) {
       setFase("listo");
       return;
     }
@@ -62,10 +73,8 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
 
     // 1) Respaldo inmediato: evita el parpadeo de "nunca confirmaste" y actúa
     //    de red de seguridad si la consulta de abajo falla.
-    const cache = leerRsvpLocal(telefono);
-    const base: Record<string, boolean> = cache
-      ? { ...asistenciaInicial, ...cache.asistencia }
-      : asistenciaInicial;
+    const cache = leerRsvpLocal(telefono, nombres);
+    const base = cache ? cache.asistencia : nombres.map(() => true);
 
     if (cache) {
       setYaConfirmo(true);
@@ -87,17 +96,32 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
     // 2) Fuente de verdad. Si responde, manda; si no, nos quedamos con (1).
     consultarEstado(endpoint, telefono, firma)
       .then((estado) => {
-        if (cancelado || !estado.encontrado) return;
+        if (cancelado) return;
 
-        const fusionada = { ...base };
-        estado.asisten.forEach((nombre) => (fusionada[nombre] = true));
-        estado.noAsisten.forEach((nombre) => (fusionada[nombre] = false));
+        if (!estado.autorizado) {
+          setEnlaceInvalido(true);
+          return;
+        }
+
+        if (!estado.encontrado) return;
+
+        // La hoja guarda nombres; las casillas van por posición. Se proyecta
+        // lo uno sobre lo otro y se descarta cualquier nombre que ya no
+        // pertenezca al grupo del enlace.
+        const asisten = new Set(estado.asisten);
+        const noAsisten = new Set(estado.noAsisten);
+
+        const fusionada = nombres.map((nombre, i) => {
+          if (asisten.has(nombre)) return true;
+          if (noAsisten.has(nombre)) return false;
+          return base[i] ?? true;
+        });
 
         setYaConfirmo(true);
         setAsistencia(fusionada);
         if (estado.mensaje) setMensaje(estado.mensaje);
 
-        guardarRsvpLocal(telefono, { asistencia: fusionada, mensaje: estado.mensaje });
+        guardarRsvpLocal(telefono, { nombres, asistencia: fusionada, mensaje: estado.mensaje });
       })
       .catch((err: unknown) => {
         // A propósito NO se hace setYaConfirmo(false): perder la conexión no
@@ -111,10 +135,7 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
     return () => {
       cancelado = true;
     };
-    // `clavesGrupo` sustituye a `asistenciaInicial` como dependencia: es su
-    // identidad estable en forma de cadena.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [telefono, firma, endpoint, clavesGrupo]);
+  }, [telefono, firma, endpoint, nombres]);
 
   // Dos cierres independientes. El de actualizaciones es más tardío porque
   // quien ya respondió solo está corrigiendo un número que ya contamos.
@@ -129,8 +150,8 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
       : null;
   }, [yaConfirmo, config.cierreNuevos, config.cierreActualizaciones]);
 
-  const alternar = useCallback((nombre: string) => {
-    setAsistencia((prev) => ({ ...prev, [nombre]: !prev[nombre] }));
+  const alternar = useCallback((indice: number) => {
+    setAsistencia((prev) => prev.map((va, i) => (i === indice ? !va : va)));
   }, []);
 
   const limpiar = useCallback(() => {
@@ -142,9 +163,8 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
     setFase("enviando");
     setError(null);
 
-    const entradas = Object.entries(asistencia);
-    const asisten = entradas.filter(([, va]) => va).map(([nombre]) => nombre);
-    const noAsisten = entradas.filter(([, va]) => !va).map(([nombre]) => nombre);
+    const asisten = nombres.filter((_, i) => asistencia[i]);
+    const noAsisten = nombres.filter((_, i) => !asistencia[i]);
 
     const resultado = await enviarConfirmacion(endpoint, {
       grupo: grupoBruto,
@@ -158,7 +178,7 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
     if (resultado.tipo === "ok") {
       setYaConfirmo(true);
       setFase("enviado");
-      guardarRsvpLocal(telefono, { asistencia, mensaje });
+      guardarRsvpLocal(telefono, { nombres, asistencia, mensaje });
       return;
     }
 
@@ -170,7 +190,7 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
           ? "Este enlace no es válido. Usa el que te enviamos por WhatsApp."
           : resultado.mensaje,
     );
-  }, [asistencia, endpoint, firma, grupoBruto, mensaje, telefono]);
+  }, [asistencia, endpoint, firma, grupoBruto, mensaje, nombres, telefono]);
 
   return {
     fase,
@@ -180,6 +200,7 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
     yaConfirmo,
     puedeConfirmar: motivoCierre === null,
     motivoCierre,
+    enlaceInvalido,
     alternar,
     escribirMensaje: setMensaje,
     confirmar,

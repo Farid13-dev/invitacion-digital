@@ -1,4 +1,11 @@
-import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { useAtajosTeclado } from "@/hooks/useAtajosTeclado";
 import { useBloqueoScroll } from "@/hooks/useBloqueoScroll";
 
@@ -15,15 +22,16 @@ const FOCUSABLES =
 /**
  * Diálogo modal accesible.
  *
- * Además de verse bien hace las cuatro cosas que un modal debe hacer y que la
- * primera versión de este proyecto no hacía: cerrarse con Escape, atrapar el
- * foco mientras está abierto, devolver el foco al elemento que lo abrió y
- * bloquear el scroll del fondo.
+ * Además de verse bien hace las cuatro cosas que un modal debe hacer y que casi
+ * ningún modal casero hace: cerrarse con Escape, atrapar el foco mientras está
+ * abierto, devolver el foco al elemento que lo abrió y bloquear el scroll del
+ * fondo.
  */
 export function Modal({ abierto, alCerrar, titulo, children }: Props) {
   const idTitulo = useId();
   const panel = useRef<HTMLDivElement>(null);
   const focoPrevio = useRef<HTMLElement | null>(null);
+  const inicioEnElFondo = useRef(false);
 
   useBloqueoScroll(abierto);
   useAtajosTeclado(abierto, { Escape: alCerrar });
@@ -62,10 +70,25 @@ export function Modal({ abierto, alCerrar, titulo, children }: Props) {
     }
   };
 
+  // Cerrar en el `click` del fondo no basta: si alguien selecciona el texto
+  // del formulario y suelta el ratón fuera del panel, el click cae en el
+  // fondo y el modal se cierra llevándose lo que había escrito. Solo cuenta
+  // si el gesto empezó y terminó en el fondo.
+  const gestoEnElFondo = (e: MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) inicioEnElFondo.current = true;
+  };
+
+  const cerrarSiVieneDelFondo = (e: MouseEvent<HTMLDivElement>) => {
+    const desdeElFondo = inicioEnElFondo.current && e.target === e.currentTarget;
+    inicioEnElFondo.current = false;
+    if (desdeElFondo) alCerrar();
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
-      onClick={alCerrar}
+      onMouseDown={gestoEnElFondo}
+      onClick={cerrarSiVieneDelFondo}
     >
       <div
         ref={panel}

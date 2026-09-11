@@ -13,9 +13,9 @@
  * ── Cómo se protege el acceso ──────────────────────────────────────────
  *
  * Una Web App de Apps Script publicada "para cualquier persona" no tiene
- * autenticación: quien conozca la URL puede pedir cualquier fila. En la
- * primera versión de este proyecto bastaba con probar números de teléfono
- * para leer o sobrescribir la confirmación de otro invitado.
+ * autenticación: quien conozca la URL puede pedir cualquier fila. Sin nada
+ * más, bastaría con probar números de teléfono para leer o sobrescribir la
+ * confirmación de otro invitado.
  *
  * La solución es una firma HMAC-SHA256 del teléfono, calculada con un secreto
  * que vive **solo aquí** (en las propiedades del script) y en el ordenador
@@ -58,6 +58,15 @@ var CONFIG = {
 
   /** Longitud de la firma en el enlace. Debe coincidir con el script de Python. */
   LONGITUD_FIRMA: 12,
+
+  /**
+   * Tope de caracteres por celda. La firma prueba de quién es la fila, pero no
+   * dice nada del contenido: el invitado puede editar la query de su enlace y
+   * mandar lo que quiera. Esto no evita que escriba tonterías en su propia
+   * fila, evita que escriba un megabyte de ellas en la hoja de los novios.
+   */
+  MAX_TEXTO: 300,
+  MAX_MENSAJE: 500,
 };
 
 // ════════════════════════════════════════════════════════════════════════
@@ -139,11 +148,11 @@ function doPost(e) {
     }
 
     var registro = [
-      String(datos.grupo || "").trim(),
+      recortar(datos.grupo, CONFIG.MAX_TEXTO),
       telefono,
-      String(datos.asisten || ""),
-      String(datos.noAsisten || ""),
-      String(datos.mensaje || "").slice(0, 500),
+      recortar(datos.asisten, CONFIG.MAX_TEXTO),
+      recortar(datos.noAsisten, CONFIG.MAX_TEXTO),
+      recortar(datos.mensaje, CONFIG.MAX_MENSAJE),
       ahora,
     ];
 
@@ -169,6 +178,17 @@ function doPost(e) {
 // ════════════════════════════════════════════════════════════════════════
 //  AUXILIARES
 // ════════════════════════════════════════════════════════════════════════
+
+/**
+ * Texto saneado para una celda: sin espacios sobrantes, sin apóstrofo inicial
+ * (Sheets lo interpreta como "tratar como texto") y con un tope de longitud.
+ */
+function recortar(valor, maximo) {
+  return String(valor || "")
+    .trim()
+    .replace(/^'+/, "")
+    .slice(0, maximo);
+}
 
 /**
  * Deja solo dígitos. Excel y WhatsApp insertan marcas de dirección invisibles

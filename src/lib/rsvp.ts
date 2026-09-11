@@ -19,6 +19,12 @@ const TIMEOUT_MS = 12_000;
 
 export type EstadoInvitado = {
   encontrado: boolean;
+  /**
+   * Falso si el servidor rechazó la firma del enlace. Se distingue de
+   * "no encontrado" a propósito: un enlace al que WhatsApp le comió el `&f=`
+   * daba un formulario en blanco que solo fallaba al pulsar enviar.
+   */
+  autorizado: boolean;
   asisten: string[];
   noAsisten: string[];
   mensaje: string;
@@ -77,6 +83,7 @@ export async function consultarEstado(
 
   return {
     encontrado: datos.found === true,
+    autorizado: datos.status !== "unauthorized",
     asisten: separarLista(datos.asisten),
     noAsisten: separarLista(datos.noAsisten),
     mensaje: String(datos.mensaje ?? ""),

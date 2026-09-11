@@ -24,9 +24,9 @@ const VARIANTES = {
 /**
  * Botón dorado, en versión `<button>` o `<a>` según reciba `href`.
  *
- * La unión discriminada evita el problema de la primera versión, donde el tipo
- * era la unión de atributos de botón y de enlace y había que castear en cada
- * uso: aquí, pasar `target` sin `href` es un error de compilación.
+ * La unión discriminada evita el problema clásico de mezclar los atributos de
+ * botón y de enlace en un solo tipo, que obliga a castear en cada uso: aquí,
+ * pasar `target` sin `href` es un error de compilación.
  */
 export function Boton(props: PropsBoton | PropsEnlace) {
   const { children, variante = "solido", className, ...resto } = props;

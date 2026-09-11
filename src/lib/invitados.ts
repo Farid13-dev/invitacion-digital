@@ -5,9 +5,9 @@
  * grupo tiene que poder responder "vamos dos de los tres". Por eso el nombre
  * llega codificado con dos separadores:
  *
- *   "Rosa Morales & Francisco Rodriguez (Daniel, Sara)"
- *          │                  │              └── acompañantes (hijos, plus one)
- *          └── principales ───┘
+ *   "Andrés Betancur & Laura Mejía (Tomás, Sara)"
+ *          │                 │            └── acompañantes (hijos, plus one)
+ *          └── principales ──┘
  *
  * De aquí salen los checkboxes individuales del formulario de confirmación.
  */
@@ -35,7 +35,9 @@ export function parseInvitado(bruto: string): GrupoInvitado {
     nombre = nombre.replace(/-/g, " ");
   }
 
-  const parentesis = nombre.match(/\(([^)]+)\)/);
+  // `[^)]*` y no `[^)]+`: unos paréntesis vacíos son un desliz corriente al
+  // teclear el listado, y sin esto se imprimían tal cual en la invitación.
+  const parentesis = nombre.match(/\(([^)]*)\)/);
 
   const extras = parentesis ? separarPersonas(parentesis[1] ?? "") : [];
 

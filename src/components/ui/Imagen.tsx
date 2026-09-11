@@ -16,8 +16,8 @@ type Props = {
  *
  * Las variantes las genera vite-imagetools en el build a partir del import
  * (`?w=...&format=avif;webp;jpg&as=picture`), y el navegador descarga solo la
- * primera que entiende en el tamaño que necesita. Sobre la portada original de
- * este proyecto, el AVIF pesa la mitad que el JPG equivalente.
+ * primera que entiende en el tamaño que necesita. Sobre la portada de ejemplo,
+ * el AVIF pesa la mitad que el JPG equivalente.
  *
  * `width`/`height` son los del original: fijan la relación de aspecto y evitan
  * que el texto salte cuando la foto termina de cargar.

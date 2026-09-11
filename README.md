@@ -25,13 +25,13 @@
 
 ## 🔗 Demo
 
-**[invitacion-digital.vercel.app](https://invitacion-digital.vercel.app)**
+**[invitacion-digital-sigma.vercel.app](https://invitacion-digital-sigma.vercel.app)**
 
 La invitación es personal: cada enlace lleva el nombre del grupo invitado. Para
 verla como la ve un invitado de verdad:
 
 ```
-https://invitacion-digital.vercel.app/?inv=Andr%C3%A9s%20Betancur%20%26%20Laura%20Mej%C3%ADa%20(Tom%C3%A1s)&tel=3001234567
+https://invitacion-digital-sigma.vercel.app/?inv=Andr%C3%A9s%20Betancur%20%26%20Laura%20Mej%C3%ADa%20(Tom%C3%A1s)&tel=3001234567
 ```
 
 Sin esos parámetros funciona igual, pero saluda de forma genérica y el

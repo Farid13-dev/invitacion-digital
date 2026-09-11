@@ -26,6 +26,9 @@ jobs:
       - name: Comprobación de tipos
         run: npm run typecheck
 
+      - name: Tests
+        run: npm test
+
       - name: Build
         run: npx vite build
 
@@ -56,7 +59,7 @@ jobs:
             --modo enlaces \
             --sin-firma
           test -s enlaces-generados.csv
-          grep -q "inv=Carlos+Zapata&tel=3001234567" enlaces-generados.csv
+          grep -q "inv=Camila+Ospina&tel=3001234567" enlaces-generados.csv
 
       - name: Verifica la firma HMAC
         working-directory: scripts
@@ -74,4 +77,26 @@ jobs:
 
           assert obtenido == esperado, f"firma {obtenido!r}, esperada {esperado!r}"
           print("firma OK:", obtenido)
+          PY
+
+      - name: Comprueba el saludo del mensaje
+        working-directory: scripts
+        run: |
+          python - <<'PY'
+          from enviar_invitaciones import Invitado
+
+          # El saludo de WhatsApp no puede llevar la sintaxis del grupo:
+          # "Hola Ana & Luis (Tomas)!" no se le escribe a nadie.
+          casos = {
+              "Camila Ospina": "Camila",
+              "Andres Betancur & Laura Mejia": "Andres y Laura",
+              "Julian Arango & Paula Cardenas (Tomas)": "Julian y Paula",
+              "Familia Quintero (Emilia, Samuel)": "Familia Quintero",
+          }
+
+          for grupo, esperado in casos.items():
+              obtenido = Invitado(2, grupo, "3001234567").saludo
+              assert obtenido == esperado, f"{grupo!r} -> {obtenido!r}, esperado {esperado!r}"
+
+          print("saludos OK")
           PY

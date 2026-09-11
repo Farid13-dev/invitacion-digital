@@ -27,7 +27,7 @@ export const meta = {
    * No se lee de `.env` a propósito: este archivo lo importan tanto Vite
    * (Node) como el navegador, y `process.env` no existe en el segundo.
    */
-  sitioUrl: "https://invitacion-digital.vercel.app",
+  sitioUrl: "https://invitacion-digital-sigma.vercel.app",
 
   /**
    * Imagen de la vista previa, bajo `public/`.

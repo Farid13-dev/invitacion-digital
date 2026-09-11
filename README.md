@@ -488,9 +488,17 @@ igual de claros. Ajustar la paleta deja de ser prueba y error.
 
 ### El audio no se descarga salvo que lo pidan
 
-La canción de fondo es lo más pesado de la invitación (varios megas). El truco
-no es montar o no el componente, sino **ponerle `src` al `<audio>` o dejarlo
-vacío**: un elemento de audio sin `src` no descarga ni un byte.
+La canción de fondo sigue siendo lo más pesado de la invitación, aun
+recomprimida. El truco no es montar o no el componente, sino **ponerle `src` al
+`<audio>` o dejarlo vacío**: un elemento de audio sin `src` no descarga ni un
+byte.
+
+Comprime la tuya antes de subirla; a 192 kbps no se oye mejor en el altavoz de
+un móvil, solo tarda más:
+
+```sh
+ffmpeg -i cancion.mp3 -b:a 96k -ac 1 salida.mp3
+```
 
 Así el botón flotante existe siempre, aunque el invitado entrara en silencio, y
 puede encender la música más tarde sin recargar la página. El archivo empieza a

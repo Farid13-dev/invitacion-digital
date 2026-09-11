@@ -11,10 +11,13 @@ export function Portada({ pareja, portada }: Props) {
         imagen={portada.imagen}
         alt={`${pareja.nombreA} y ${pareja.nombreB}`}
         sizes="100vw"
-        // Es la imagen más grande y la primera que se ve. Cargarla con `lazy`
-        // solo retrasaría el LCP: aquí la prioridad es lo contrario.
+        // `eager` para que empiece de inmediato y esté lista cuando el
+        // invitado pulse "Ingresar", pero con prioridad BAJA: mientras se ve
+        // la pantalla de bienvenida esta foto está tapada por completo, y
+        // pidiéndola en alta le robaba el ancho de banda a lo que sí se ve
+        // —las tipografías del saludo y las ramas de las esquinas—.
         loading="eager"
-        fetchPriority="high"
+        fetchPriority="low"
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-sage-deep/80" />

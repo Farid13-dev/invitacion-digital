@@ -23,6 +23,18 @@
 
 ---
 
+<p align="center">
+  <img src="docs/capturas/portada.jpg" alt="Portada de la invitación con los nombres de los novios" width="31%">
+  <img src="docs/capturas/invitados.jpg" alt="Cuenta regresiva y saludo personalizado con el nombre del grupo invitado" width="31%">
+  <img src="docs/capturas/confirmacion.jpg" alt="Formulario de confirmación con una casilla por cada persona del grupo" width="31%">
+</p>
+
+<p align="center">
+  <sub>La portada · el saludo personalizado que llega en el enlace · la confirmación, persona por persona</sub>
+</p>
+
+---
+
 ## 🔗 Demo
 
 **[invitacion-digital-sigma.vercel.app](https://invitacion-digital-sigma.vercel.app)**

@@ -13,7 +13,7 @@ function localStorageDePrueba() {
   } as Storage;
 }
 
-const GRUPO = ["Andrés Betancur", "Laura Mejía", "Tomás"];
+const GRUPO = ["Andrés", "Laura", "Tomás"];
 
 beforeEach(() => {
   vi.stubGlobal("localStorage", localStorageDePrueba());
@@ -43,7 +43,7 @@ describe("respaldo local del RSVP", () => {
       mensaje: "",
     });
 
-    expect(leerRsvpLocal("3001234567", ["Andrés Betancur", "Laura Mejía"])).toBeNull();
+    expect(leerRsvpLocal("3001234567", ["Andrés", "Laura"])).toBeNull();
   });
 
   it("ignora un respaldo con otro formato", () => {

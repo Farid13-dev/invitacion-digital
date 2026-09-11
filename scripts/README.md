@@ -19,16 +19,16 @@ Un `.xlsx` o `.csv` con dos columnas, `nombre` y `telefono`:
 
 | nombre | telefono |
 |---|---|
-| `Camila Ospina` | `3001234567` |
-| `Andrés Betancur & Laura Mejía` | `3007654321` |
-| `Julián Arango & Paula Cárdenas (Tomás)` | `3009998877` |
+| `Camila` | `3001234567` |
+| `Andrés & Laura` | `3007654321` |
+| `Julián & Paula (Tomás)` | `3009998877` |
 
 Hay un ejemplo en [`data/invitados.ejemplo.csv`](./data/invitados.ejemplo.csv).
 
 **El formato del nombre importa**, no es decorativo:
 
 ```
-Andrés Betancur & Laura Mejía (Tomás, Sara)
+Andrés & Laura (Tomás, Sara)
        │               │            │
   titular 1       titular 2    acompañantes
 ```
@@ -148,12 +148,12 @@ Edita [`mensaje.txt`](./mensaje.txt). Acepta tres marcadores:
 | Marcador | Qué pone | Ejemplo |
 |---|---|---|
 | `{nombre}` | Cómo se saluda al grupo | `Andrés y Laura` |
-| `{grupo}` | La cadena del listado, entera | `Andrés Betancur & Laura Mejía (Tomás)` |
+| `{grupo}` | La cadena del listado, entera | `Andrés & Laura (Tomás)` |
 | `{enlace}` | Su enlace único | `https://…/?inv=…&tel=…&f=…` |
 
 `{nombre}` no es lo mismo que `{grupo}`: el listado usa una sintaxis que la
 invitación necesita para generar las casillas, pero que no se le escribe a
-nadie por WhatsApp. *"¡Hola Andrés Betancur & Laura Mejía (Tomás)!"* se
+nadie por WhatsApp. *"¡Hola Andrés & Laura (Tomás)!"* se
 convierte en *"¡Hola Andrés y Laura!"*. Los titulares que no son una persona
 (`Familia Quintero`) se saludan enteros.
 
@@ -172,7 +172,7 @@ literal, dóblala: `{{` y `}}`.
 Cada enlace lleva un parámetro `f`:
 
 ```
-https://tu-invitacion.vercel.app/?inv=Camila+Ospina&tel=3001234567&f=a1b2c3d4e5f6
+https://tu-invitacion.vercel.app/?inv=Camila&tel=3001234567&f=a1b2c3d4e5f6
                                                                     └── HMAC-SHA256
 ```
 

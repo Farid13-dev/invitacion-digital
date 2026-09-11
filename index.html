@@ -11,14 +11,23 @@
       No las escribas aquí a mano o habrá dos fuentes de verdad.
     -->
 
-    <!-- Las tipografías vienen de un dominio distinto: abrir la conexión
-         antes de necesitarla ahorra el DNS + TLS del camino crítico. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&family=Parisienne&display=swap"
-    />
+    <!--
+      Las tipografías se sirven desde este mismo dominio (ver
+      src/styles/fuentes.css). Aquí solo se precargan las tres que necesita la
+      PRIMERA pantalla: el saludo de la bienvenida y sus dos botones.
+
+      Sin esto el navegador no sabe que las necesita hasta que descarga y
+      parsea el CSS, así que el texto se pinta con la tipografía del sistema y
+      salta al cambiar. Las demás (Parisienne, la redonda de Cormorant y el
+      peso medio de Jost) se descargan solas cuando aparece el texto que las
+      usa: precargarlas aquí solo robaría ancho de banda a estas tres.
+    -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+          href="/fonts/cormorant-garamond-300.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+          href="/fonts/jost-300.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+          href="/fonts/jost-400.woff2" />
   </head>
 
   <body>

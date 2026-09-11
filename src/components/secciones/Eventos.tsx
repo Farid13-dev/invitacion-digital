@@ -63,7 +63,10 @@ export function Eventos({ eventos }: { eventos: EventoDelDia[] }) {
               title={`Mapa de ${evento.lugar.nombre}`}
               src={urlMapaEmbebido(evento.lugar.coordenadas)}
               loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
+              // La URL de la invitación lleva el nombre y el teléfono del
+              // invitado en la query. Sin esto el navegador se los manda a
+              // Google en la cabecera Referer cada vez que se abre el mapa.
+              referrerPolicy="no-referrer"
               className="h-full w-full border-0"
             />
           </div>

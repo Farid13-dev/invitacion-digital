@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ConfigRsvp } from "@/config/tipos";
 import { guardarRsvpLocal, leerRsvpLocal } from "@/lib/almacenamiento";
+import { hayCambios as calcularCambios, mismasListas, type Borrador } from "@/lib/confirmacion";
 import { yaPaso } from "@/lib/fechas";
 import { consultarEstado, enviarConfirmacion } from "@/lib/rsvp";
 import type { Invitado } from "./useInvitado";
@@ -10,13 +11,25 @@ export type FaseRsvp = "cargando" | "listo" | "enviando" | "enviado";
 export type Rsvp = {
   fase: FaseRsvp;
   /**
-   * Una casilla por persona del grupo, en el mismo orden que `grupo.todos`.
+   * Borrador que se edita en el formulario. Una casilla por persona del grupo,
+   * en el mismo orden que `grupo.todos`.
+   *
    * Va por posición y no por nombre a propósito: dos invitados que se llaman
    * igual (un padre y un hijo, algo corriente) son dos personas y necesitan
    * dos casillas independientes.
    */
   asistencia: boolean[];
   mensaje: string;
+  /**
+   * La última respuesta que el servidor dio por guardada, o `null` si este
+   * invitado nunca ha respondido.
+   *
+   * Se mantiene aparte del borrador para que la sección describa lo que está
+   * escrito en la hoja, y no lo que el invitado lleva a medio teclear.
+   */
+  guardado: Borrador | null;
+  /** `false` cuando el borrador es idéntico a lo ya guardado: no hay nada que enviar. */
+  hayCambios: boolean;
   error: string | null;
   /** Si ya había respondido antes, el formulario dice "actualizar", no "confirmar". */
   yaConfirmo: boolean;
@@ -43,6 +56,9 @@ export type Rsvp = {
  * Segunda regla: **la hoja no manda sobre quién está invitado.** Lo que llega
  * del servidor solo puede marcar o desmarcar a las personas que vienen en el
  * enlace; un nombre que ya no está en el grupo se ignora.
+ *
+ * Tercera regla: **una respuesta no se envía dos veces.** Ni por doble toque,
+ * ni por el reintento de quien creyó que había fallado.
  */
 export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
   const { grupo, grupoBruto, telefono, firma } = invitado;
@@ -53,10 +69,15 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
 
   const [asistencia, setAsistencia] = useState<boolean[]>(asistenciaInicial);
   const [mensaje, setMensaje] = useState("");
+  const [guardado, setGuardado] = useState<Borrador | null>(null);
   const [fase, setFase] = useState<FaseRsvp>("cargando");
   const [error, setError] = useState<string | null>(null);
-  const [yaConfirmo, setYaConfirmo] = useState(false);
   const [enlaceInvalido, setEnlaceInvalido] = useState(false);
+
+  // `fase` no sirve de cerrojo: entre el clic y el siguiente render hay una
+  // ventana en la que el botón todavía no está deshabilitado, y en un móvil el
+  // doble toque cae justo ahí. La ref se actualiza en el mismo instante.
+  const enviando = useRef(false);
 
   const { endpoint } = config;
   // `useInvitado` resuelve la URL una sola vez, así que esta referencia es
@@ -77,9 +98,9 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
     const base = cache ? cache.asistencia : nombres.map(() => true);
 
     if (cache) {
-      setYaConfirmo(true);
       setAsistencia(base);
-      if (cache.mensaje) setMensaje(cache.mensaje);
+      setMensaje(cache.mensaje);
+      setGuardado({ asistencia: cache.asistencia, mensaje: cache.mensaje });
     }
 
     if (!endpoint) {
@@ -117,15 +138,15 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
           return base[i] ?? true;
         });
 
-        setYaConfirmo(true);
         setAsistencia(fusionada);
-        if (estado.mensaje) setMensaje(estado.mensaje);
+        setMensaje(estado.mensaje);
+        setGuardado({ asistencia: fusionada, mensaje: estado.mensaje });
 
         guardarRsvpLocal(telefono, { nombres, asistencia: fusionada, mensaje: estado.mensaje });
       })
       .catch((err: unknown) => {
-        // A propósito NO se hace setYaConfirmo(false): perder la conexión no
-        // significa que el invitado no haya confirmado.
+        // A propósito NO se borra `guardado`: perder la conexión no significa
+        // que el invitado no haya confirmado.
         console.error("[rsvp] no se pudo verificar el estado de confirmación:", err);
       })
       .finally(() => {
@@ -136,6 +157,8 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
       cancelado = true;
     };
   }, [telefono, firma, endpoint, nombres]);
+
+  const yaConfirmo = guardado !== null;
 
   // Dos cierres independientes. El de actualizaciones es más tardío porque
   // quien ya respondió solo está corrigiendo un número que ya contamos.
@@ -150,6 +173,11 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
       : null;
   }, [yaConfirmo, config.cierreNuevos, config.cierreActualizaciones]);
 
+  const hayCambios = useMemo(
+    () => calcularCambios({ asistencia, mensaje }, guardado),
+    [asistencia, mensaje, guardado],
+  );
+
   const alternar = useCallback((indice: number) => {
     setAsistencia((prev) => prev.map((va, i) => (i === indice ? !va : va)));
   }, []);
@@ -160,42 +188,72 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
   }, []);
 
   const confirmar = useCallback(async () => {
+    // Cerrojo contra el doble toque y contra el reintento impaciente.
+    if (enviando.current) return;
+    enviando.current = true;
+
     setFase("enviando");
     setError(null);
 
     const asisten = nombres.filter((_, i) => asistencia[i]);
     const noAsisten = nombres.filter((_, i) => !asistencia[i]);
+    const limpio = mensaje.trim();
 
-    const resultado = await enviarConfirmacion(endpoint, {
-      grupo: grupoBruto,
-      telefono,
-      firma,
-      asisten,
-      noAsisten,
-      mensaje,
-    });
-
-    if (resultado.tipo === "ok") {
-      setYaConfirmo(true);
+    const darPorGuardado = () => {
+      setGuardado({ asistencia, mensaje: limpio });
+      setMensaje(limpio);
       setFase("enviado");
-      guardarRsvpLocal(telefono, { nombres, asistencia, mensaje });
-      return;
-    }
+      guardarRsvpLocal(telefono, { nombres, asistencia, mensaje: limpio });
+    };
 
-    setFase("listo");
-    setError(
-      resultado.tipo === "cerrado"
-        ? resultado.mensaje
-        : resultado.tipo === "noAutorizado"
-          ? "Este enlace no es válido. Usa el que te enviamos por WhatsApp."
-          : resultado.mensaje,
-    );
+    try {
+      const resultado = await enviarConfirmacion(endpoint, {
+        grupo: grupoBruto,
+        telefono,
+        firma,
+        asisten,
+        noAsisten,
+        mensaje: limpio,
+      });
+
+      if (resultado.tipo === "ok") {
+        darPorGuardado();
+        return;
+      }
+
+      if (resultado.tipo === "error") {
+        // Un corte de red o un timeout NO significan que no se haya guardado:
+        // Apps Script arranca en frío y a veces termina la escritura después
+        // de que hayamos dejado de esperar. Antes de acusar de error, se lo
+        // preguntamos a la hoja. Sin esto, el invitado veía "error de
+        // conexión" sobre una respuesta ya registrada y volvía a enviarla.
+        const estado = await consultarEstado(endpoint, telefono, firma).catch(() => null);
+
+        if (estado?.encontrado && mismasListas(estado.asisten, asisten)) {
+          darPorGuardado();
+          return;
+        }
+      }
+
+      setFase("listo");
+      setError(
+        resultado.tipo === "cerrado"
+          ? resultado.mensaje
+          : resultado.tipo === "noAutorizado"
+            ? "Este enlace no es válido. Usa el que te enviamos por WhatsApp."
+            : resultado.mensaje,
+      );
+    } finally {
+      enviando.current = false;
+    }
   }, [asistencia, endpoint, firma, grupoBruto, mensaje, nombres, telefono]);
 
   return {
     fase,
     asistencia,
     mensaje,
+    guardado,
+    hayCambios,
     error,
     yaConfirmo,
     puedeConfirmar: motivoCierre === null,

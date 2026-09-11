@@ -18,12 +18,13 @@ import type { ConfigEvento } from "./tipos";
 // Las imágenes se importan con las medidas en las que realmente se muestran.
 // vite-imagetools genera AVIF/WebP/JPG en cada tamaño durante el build, así el
 // navegador descarga solo la variante que necesita.
-import portada from "@/assets/pareja/portada.jpg?w=768;1280;1920&format=avif;webp;jpg&as=picture";
+import portada from "@/assets/pareja/portada.jpg?w=768;1280;1600&format=avif;webp;jpg&as=picture";
 import galeria01 from "@/assets/galeria/01.jpg?w=480;960&format=avif;webp;jpg&as=picture";
 import galeria02 from "@/assets/galeria/02.jpg?w=480;960&format=avif;webp;jpg&as=picture";
 import galeria03 from "@/assets/galeria/03.jpg?w=480;960&format=avif;webp;jpg&as=picture";
 import galeria04 from "@/assets/galeria/04.jpg?w=480;960&format=avif;webp;jpg&as=picture";
 import galeria05 from "@/assets/galeria/05.jpg?w=480;960&format=avif;webp;jpg&as=picture";
+import galeria06 from "@/assets/galeria/06.jpg?w=480;960&format=avif;webp;jpg&as=picture";
 
 export const evento: ConfigEvento = {
   pareja: {
@@ -38,7 +39,7 @@ export const evento: ConfigEvento = {
   portada: {
     fechaCorta: "15.05.2027",
     frase:
-      "Entre el verde de la montaña y el azul del cielo, dos caminos se convierten en uno solo.",
+      "Bajo el abrazo del bosque y la inmensidad del horizonte, nuestras huellas deciden compartir el mismo sendero.",
     imagen: portada,
   },
 
@@ -96,7 +97,7 @@ export const evento: ConfigEvento = {
   galeria: {
     titulo: "Retratos de Nuestro Amor",
     subtitulo: "Un minuto, un segundo, un instante que queda en la eternidad",
-    fotos: [galeria01, galeria02, galeria03, galeria04, galeria05],
+    fotos: [galeria01, galeria02, galeria03, galeria04, galeria05, galeria06],
   },
 
   detalles: {

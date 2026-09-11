@@ -10,12 +10,15 @@ El listado necesita dos columnas, `nombre` y `telefono`:
 
     nombre                                    | telefono
     ------------------------------------------|------------
-    Rosa Morales & Francisco Rodriguez (Ana)  | 3001234567
-    Carlos Zapata                             | 3109876543
+    Camila Ospina                             | 3001234567
+    Andres Betancur & Laura Mejia (Tomas)     | 3007654321
 
 El formato del nombre no es decorativo: "&" separa titulares y los paréntesis
 marcan acompañantes. De ahí salen las casillas individuales del formulario de
 confirmación, así que un grupo puede responder "vamos dos de los tres".
+
+Esa sintaxis no llega al mensaje de WhatsApp: el saludo se construye aparte
+("¡Hola Andres y Laura!"), y el grupo completo queda disponible como {grupo}.
 
 Antes de mandar nada de verdad:
 
@@ -47,6 +50,12 @@ from pathlib import Path
 # ─────────────────────────────────────────────────────────────────────────
 
 LONGITUD_FIRMA = 12  # debe coincidir con CONFIG.LONGITUD_FIRMA del Apps Script
+# Marcadores que acepta la plantilla del mensaje, con valores de mentira para
+# validarla antes de empezar a enviar.
+MARCADORES_DE_PRUEBA = {"nombre": "", "grupo": "", "enlace": ""}
+# Titulares que no son una persona: de estos se saluda el nombre completo
+# ("Familia Betancur"), no la primera palabra.
+COLECTIVOS = {"familia", "flia", "fam", "sres", "señores", "senores", "hogar"}
 COLUMNAS = ("nombre", "telefono")
 SALIDA_ENLACES = "enlaces-generados.csv"
 
@@ -79,10 +88,53 @@ class Invitado:
     def valido(self) -> bool:
         return bool(self.nombre) and 7 <= len(self.telefono) <= 15
 
+    @property
+    def saludo(self) -> str:
+        """Cómo se le habla a este grupo en el mensaje de WhatsApp.
+
+        `nombre` lleva la sintaxis del grupo ("Andrés Betancur & Laura Mejía
+        (Tomás, Sara)"), que es justo lo que la invitación necesita para
+        generar las casillas — pero un saludo de WhatsApp no puede decir
+        "¡Hola Andrés Betancur & Laura Mejía (Tomás, Sara)!".
+
+        Aquí se queda con los titulares y con el nombre de pila:
+        "¡Hola Andrés y Laura!".
+        """
+        titulares = [nombre_de_trato(t) for t in separar_titulares(self.nombre)]
+        if not titulares:
+            return self.nombre
+        if len(titulares) == 1:
+            return titulares[0]
+        return ", ".join(titulares[:-1]) + " y " + titulares[-1]
+
 
 # ─────────────────────────────────────────────────────────────────────────
 # Lectura del listado
 # ─────────────────────────────────────────────────────────────────────────
+
+
+def separar_titulares(nombre: str) -> list[str]:
+    """Los titulares del grupo, sin los acompañantes entre paréntesis.
+
+    Es el mismo formato que descompone `src/lib/invitados.ts` en el navegador;
+    aquí solo hace falta la parte de los titulares, para el saludo.
+    """
+    base = re.sub(r"\([^)]*\)", "", nombre)
+    return [p.strip() for p in re.split(r"[&,]", base) if p.strip()]
+
+
+def nombre_de_trato(titular: str) -> str:
+    """El nombre de pila, salvo cuando el titular no es una persona.
+
+    "Camila Ospina" se saluda como "Camila", pero "Familia Betancur" no se
+    saluda como "Familia": ahí el apellido es justo lo que hace falta.
+    """
+    palabras = titular.split()
+    if not palabras:
+        return titular
+    if palabras[0].rstrip(".").lower() in COLECTIVOS:
+        return titular
+    return palabras[0]
 
 
 def limpiar_telefono(valor: object) -> str:
@@ -150,25 +202,29 @@ def _leer_xlsx(ruta: Path) -> list[tuple[int, dict]]:
         )
 
     libro = load_workbook(ruta, read_only=True, data_only=True)
-    hoja = libro.active
-    if hoja is None:
-        raise SystemExit(f"El archivo {ruta} no tiene ninguna hoja.")
-
-    filas = hoja.iter_rows(values_only=True)
 
     try:
-        encabezados = [limpiar_nombre(c).lower() for c in next(filas)]
-    except StopIteration:
-        raise SystemExit(f"El archivo {ruta} está vacío.")
+        hoja = libro.active
+        if hoja is None:
+            raise SystemExit(f"El archivo {ruta} no tiene ninguna hoja.")
 
-    _validar_columnas(encabezados, ruta)
+        filas = hoja.iter_rows(values_only=True)
 
-    resultado = []
-    for numero, valores in enumerate(filas, start=2):
-        resultado.append((numero, dict(zip(encabezados, valores))))
+        try:
+            encabezados = [limpiar_nombre(c).lower() for c in next(filas)]
+        except StopIteration:
+            raise SystemExit(f"El archivo {ruta} está vacío.")
 
-    libro.close()
-    return resultado
+        _validar_columnas(encabezados, ruta)
+
+        return [
+            (numero, dict(zip(encabezados, valores)))
+            for numero, valores in enumerate(filas, start=2)
+        ]
+    finally:
+        # read_only deja un descriptor abierto; sin esto, un error a mitad de
+        # la lectura lo mantiene tomado hasta que muere el proceso.
+        libro.close()
 
 
 def _validar_columnas(encabezados: list[str], ruta: Path) -> None:
@@ -254,6 +310,18 @@ def cargar_plantilla(ruta: Path | None) -> str:
         raise SystemExit(
             f"{ruta} no contiene {{enlace}}: el invitado recibiría un mensaje "
             "sin su invitación."
+        )
+
+    # Una llave suelta en el texto ("{" de un emoji copiado, una nota entre
+    # llaves) hace que .format() reviente a mitad del envío, con cuarenta
+    # pestañas ya abiertas. Se comprueba aquí, antes de mandar nada.
+    try:
+        plantilla.format(**MARCADORES_DE_PRUEBA)
+    except (KeyError, IndexError, ValueError) as error:
+        raise SystemExit(
+            f"{ruta} tiene un marcador que no se puede rellenar: {error}\n"
+            f"Los válidos son {{nombre}}, {{grupo}} y {{enlace}}. Para escribir "
+            "una llave literal, dóblala: {{{{ }}}}"
         )
 
     return plantilla
@@ -452,7 +520,7 @@ def enviar(
                 time.sleep(1.5)
                 continue
 
-            mensaje = plantilla.format(nombre=inv.nombre, enlace=enlace)
+            mensaje = plantilla.format(nombre=inv.saludo, grupo=inv.nombre, enlace=enlace)
             webbrowser.open(construir_url_whatsapp(inv.telefono, args.indicativo, mensaje))
             print(f"  {etiqueta}  ({inv.telefono})")
 
@@ -460,10 +528,14 @@ def enviar(
                 time.sleep(args.espera)
 
     except KeyboardInterrupt:
+        # Se reanuda en la fila interrumpida, no en la siguiente: no hay forma
+        # de saber si esa llegó a enviarse. Repetir una invitación es
+        # incómodo; olvidarse de un invitado es un asiento vacío el día de la
+        # boda que nadie sabe explicar.
         print(
             f"\n\n  Interrumpido en la fila {ultima_fila}.\n"
-            f"  Para continuar donde ibas:\n"
-            f"      python enviar_invitaciones.py -a {args.archivo} --desde {ultima_fila + 1}\n"
+            f"  Para continuar (comprueba si esa última llegó a enviarse):\n"
+            f"      python enviar_invitaciones.py -a {args.archivo} --desde {ultima_fila}\n"
         )
         return 130
 

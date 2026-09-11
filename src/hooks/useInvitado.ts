@@ -17,8 +17,8 @@ export type Invitado = {
  * Lee la identidad del invitado de la URL: `?inv=<nombres>&tel=<telefono>&f=<firma>`.
  *
  * Se resuelve en el primer render, no en un efecto. Leerlo en un `useEffect`
- * (como hacía la primera versión) provoca un parpadeo: el invitado ve un
- * instante el saludo genérico antes de que aparezca su nombre.
+ * provoca un parpadeo: el invitado ve un instante el saludo genérico antes de
+ * que aparezca su nombre.
  */
 export function useInvitado(): Invitado {
   return useMemo(() => {

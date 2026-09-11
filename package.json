@@ -1,6 +1,6 @@
 {
   "name": "invitacion-digital",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "Plantilla de invitacion digital personalizada por invitado, con RSVP sobre Google Sheets.",
@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "test": "vitest run",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
@@ -33,6 +34,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^7.1.0",
-    "vite-imagetools": "^7.0.5"
+    "vite-imagetools": "^7.0.5",
+    "vitest": "^3.2.7"
   }
 }

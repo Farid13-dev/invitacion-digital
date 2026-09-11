@@ -41,7 +41,10 @@ function metadatosDelEvento(): Plugin {
     transformIndexHtml: {
       order: "pre",
       handler: (html: string) => ({
-        html,
+        // El idioma también sale de `meta.ts`: es un dato del evento, no del
+        // andamiaje, y tenerlo escrito a mano en index.html era una segunda
+        // fuente de verdad esperando a quedarse desfasada.
+        html: html.replace(/<html\b[^>]*\blang="[^"]*"/i, `<html lang="${meta.idioma}"`),
         tags: [
           { tag: "title", children: meta.titulo, injectTo: "head" as const },
           ...porNombre.map(([name, content]) => ({

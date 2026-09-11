@@ -11,6 +11,7 @@ import { Invitados } from "@/components/secciones/Invitados";
 import { Portada } from "@/components/secciones/Portada";
 import { Regalos } from "@/components/secciones/Regalos";
 import { evento } from "@/config/evento";
+import { useBloqueoScroll } from "@/hooks/useBloqueoScroll";
 import { useInvitado } from "@/hooks/useInvitado";
 import { useRsvp } from "@/hooks/useRsvp";
 
@@ -31,6 +32,10 @@ export function App() {
 
   const sonandoMusica = entrada.hecha && entrada.conMusica && evento.musica !== null;
 
+  // La bienvenida es una capa fija; sin esto la página de debajo se
+  // desplaza igual y el invitado entra a mitad de la invitación.
+  useBloqueoScroll(!entrada.hecha);
+
   return (
     <main className="relative bg-background">
       {!entrada.hecha && (
@@ -49,7 +54,7 @@ export function App() {
       <CuentaRegresiva {...evento.cuentaRegresiva} />
       <Invitados grupo={invitado.grupo} textos={evento.invitados} />
       <Eventos eventos={evento.eventos} />
-      <Confirmacion grupo={invitado.grupo} rsvp={rsvp} />
+      <Confirmacion grupo={invitado.grupo} identificado={invitado.identificado} rsvp={rsvp} />
       <Galeria galeria={evento.galeria} />
       <Detalles detalles={evento.detalles} />
       <Regalos regalos={evento.regalos} />

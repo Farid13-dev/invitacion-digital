@@ -1,5 +1,9 @@
 # Backend de confirmaciones (Google Apps Script)
 
+<sub>[← README principal](../README.md) · **paso 4 de 6** de la
+[puesta en marcha](../README.md#puesta-en-marcha) · siguiente:
+[variables de entorno y despliegue](../README.md#5--variables-de-entorno-y-despliegue)</sub>
+
 El RSVP se guarda en una hoja de Google Sheets a través de una Web App de Apps
 Script. No hay servidor que mantener, no cuesta nada, y los novios ven las
 confirmaciones llegar en una hoja de cálculo que ya saben usar.
@@ -149,3 +153,9 @@ desactiva el endpoint sin borrar la hoja ni los datos.
 | Los cambios en el código no se notan | Apps Script sirve la **implementación publicada**, no el editor: hay que crear una versión nueva en *Gestionar implementaciones* |
 | La consulta tarda segundos | Normal en la primera petición tras un rato (arranque en frío de Apps Script) |
 | `No existe la hoja "Confirmaciones"` | Falta ejecutar `prepararHoja` (paso 5) |
+
+---
+
+Con el endpoint publicado, vuelve a la puesta en marcha:
+**[5 · Variables de entorno y despliegue](../README.md#5--variables-de-entorno-y-despliegue)**
+y luego **[6 · Enviar las invitaciones](../README.md#6--enviar-las-invitaciones)**.

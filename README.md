@@ -488,9 +488,17 @@ igual de claros. Ajustar la paleta deja de ser prueba y error.
 
 ### El audio no se descarga salvo que lo pidan
 
-La canción de fondo es lo más pesado de la invitación (varios megas). El
-componente `MusicaFondo` **solo se monta si el invitado eligió entrar con
-música**: quien entra en silencio no descarga ni un byte.
+La canción de fondo es lo más pesado de la invitación (varios megas). El truco
+no es montar o no el componente, sino **ponerle `src` al `<audio>` o dejarlo
+vacío**: un elemento de audio sin `src` no descarga ni un byte.
+
+Así el botón flotante existe siempre, aunque el invitado entrara en silencio, y
+puede encender la música más tarde sin recargar la página. El archivo empieza a
+bajar en el momento exacto en que lo pide, no antes.
+
+El `src` se asigna dentro del manejador del clic y no en un efecto posterior:
+Safari en iOS solo le concede permiso de reproducción a la llamada que nace
+directamente del gesto del usuario.
 
 Que la pantalla de bienvenida exista no es decorativo — los navegadores no
 dejan arrancar el audio sin un gesto del usuario. En vez de disimularlo con un

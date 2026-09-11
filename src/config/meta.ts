@@ -35,6 +35,17 @@ export const meta = {
    */
   imagenOg: "/og.jpg",
 
-  /** Color de la barra del navegador en móvil. */
-  colorTema: "#3d4a3f",
+  /**
+   * Color de la barra del navegador en móvil.
+   *
+   * Debe ser el mismo verde que `--color-sage-deep` de `src/styles/tema.css`,
+   * que es el del pie y los modales: en Android, Chrome pinta con esto la
+   * barra de direcciones, y si no coincide queda una franja que no encaja
+   * justo encima de la invitación.
+   *
+   * Va en hex y no como variable CSS porque una etiqueta `<meta>` no entiende
+   * de variables. `src/config/tema.test.ts` comprueba que los dos no se
+   * separen.
+   */
+  colorTema: "#2e4239",
 } as const;

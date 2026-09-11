@@ -28,8 +28,8 @@ import galeria06 from "@/assets/galeria/06.jpg?w=480;960&format=avif;webp;jpg&as
 
 export const evento: ConfigEvento = {
   pareja: {
-    nombreA: "Valentina Restrepo",
-    nombreB: "Mateo Herrera",
+    nombreA: "Valentina",
+    nombreB: "Mateo",
   },
 
   bienvenida: {

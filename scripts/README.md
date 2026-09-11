@@ -1,5 +1,9 @@
 # Envío de invitaciones
 
+<sub>[← README principal](../README.md) · **paso 6 de 6** de la
+[puesta en marcha](../README.md#puesta-en-marcha) · antes de esto necesitas el
+[backend de confirmaciones](../apps-script/README.md) publicado</sub>
+
 Genera un enlace único y firmado para cada invitado y abre WhatsApp Web con el
 mensaje ya escrito. Tú solo pulsas Enter.
 
@@ -15,25 +19,25 @@ Un `.xlsx` o `.csv` con dos columnas, `nombre` y `telefono`:
 
 | nombre | telefono |
 |---|---|
-| `Carlos Zapata` | `3001234567` |
-| `Rosa Morales & Francisco Rodriguez` | `3109876543` |
-| `Alex Gómez & Sofía Santafé (Daniel)` | `3205551234` |
+| `Camila Ospina` | `3001234567` |
+| `Andrés Betancur & Laura Mejía` | `3007654321` |
+| `Julián Arango & Paula Cárdenas (Tomás)` | `3009998877` |
 
 Hay un ejemplo en [`data/invitados.ejemplo.csv`](./data/invitados.ejemplo.csv).
 
 **El formato del nombre importa**, no es decorativo:
 
 ```
-Rosa Morales & Francisco Rodriguez (Daniel, Sara)
-       │               │                 │
-  titular 1       titular 2        acompañantes
+Andrés Betancur & Laura Mejía (Tomás, Sara)
+       │               │            │
+  titular 1       titular 2    acompañantes
 ```
 
 De ahí salen las casillas del formulario de confirmación. Un grupo de cuatro
 verá cuatro casillas y podrá responder "vamos tres".
 
 > **En CSV, un nombre con coma va entre comillas:**
-> `"Familia Triviño (Ignacia, Israel)",3143025381`.
+> `"Familia Quintero (Emilia, Samuel)",3005554433`.
 > Sin ellas, la coma parte la fila y el teléfono acaba en la columna
 > equivocada. En `.xlsx` no hace falta.
 
@@ -124,9 +128,13 @@ Da igual: el script te dice exactamente cómo seguir.
 
 ```
   Interrumpido en la fila 34.
-  Para continuar donde ibas:
-      python enviar_invitaciones.py -a data/invitados.xlsx --desde 35
+  Para continuar (comprueba si esa última llegó a enviarse):
+      python enviar_invitaciones.py -a data/invitados.xlsx --desde 34
 ```
+
+Reanuda en la fila interrumpida, no en la siguiente: nadie sabe si esa llegó a
+enviarse. Repetir una invitación es una anécdota; olvidarse de un invitado es
+una silla vacía que no tiene explicación.
 
 `enlaces-generados.csv` queda escrito desde el principio, así que siempre
 puedes copiar un enlace suelto y mandarlo a mano.
@@ -135,11 +143,27 @@ puedes copiar un enlace suelto y mandarlo a mano.
 
 ## El mensaje
 
-Edita [`mensaje.txt`](./mensaje.txt). Acepta dos marcadores:
+Edita [`mensaje.txt`](./mensaje.txt). Acepta tres marcadores:
 
-- `{nombre}` — el nombre del grupo, tal cual viene del listado
-- `{enlace}` — su enlace único (**obligatorio**; el script se niega a
-  ejecutarse sin él, porque el invitado recibiría un mensaje sin invitación)
+| Marcador | Qué pone | Ejemplo |
+|---|---|---|
+| `{nombre}` | Cómo se saluda al grupo | `Andrés y Laura` |
+| `{grupo}` | La cadena del listado, entera | `Andrés Betancur & Laura Mejía (Tomás)` |
+| `{enlace}` | Su enlace único | `https://…/?inv=…&tel=…&f=…` |
+
+`{nombre}` no es lo mismo que `{grupo}`: el listado usa una sintaxis que la
+invitación necesita para generar las casillas, pero que no se le escribe a
+nadie por WhatsApp. *"¡Hola Andrés Betancur & Laura Mejía (Tomás)!"* se
+convierte en *"¡Hola Andrés y Laura!"*. Los titulares que no son una persona
+(`Familia Quintero`) se saludan enteros.
+
+`{enlace}` es **obligatorio**: sin él el invitado recibiría un mensaje sin
+invitación, así que el script se niega a arrancar.
+
+La plantilla se valida entera antes de abrir la primera pestaña. Si lleva una
+llave suelta, el script lo dice y no envía nada — en vez de reventar en el
+invitado 47 con cuarenta pestañas ya abiertas. Para escribir una llave
+literal, dóblala: `{{` y `}}`.
 
 ---
 
@@ -148,7 +172,7 @@ Edita [`mensaje.txt`](./mensaje.txt). Acepta dos marcadores:
 Cada enlace lleva un parámetro `f`:
 
 ```
-https://tu-invitacion.vercel.app/?inv=Carlos+Zapata&tel=3001234567&f=a1b2c3d4e5f6
+https://tu-invitacion.vercel.app/?inv=Camila+Ospina&tel=3001234567&f=a1b2c3d4e5f6
                                                                     └── HMAC-SHA256
 ```
 
@@ -174,3 +198,9 @@ es la forma habitual de que te bloqueen la cuenta.
 Aun así, mandar decenas de mensajes seguidos a números que no te tienen
 agendado puede hacer que te marquen como spam. Por eso la espera por defecto
 es de 15 segundos y conviene no bajarla.
+
+---
+
+**Enlaces útiles:** [la firma del enlace, explicada](../README.md#3--cada-invitado-solo-puede-tocar-su-propia-fila) ·
+[el backend que recibe las confirmaciones](../apps-script/README.md) ·
+[README principal](../README.md)

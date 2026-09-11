@@ -8,8 +8,8 @@ function aFormatoCalendario(fecha: Date): string {
 
 /**
  * Enlace "Agregar a Google Calendar" con la duración real del evento.
- * (La primera versión de este proyecto asumía 2 horas para todo, así que la
- * recepción de 3 h y media aparecía cortada en el calendario del invitado.)
+ * Dar por hecho que todo dura dos horas es fácil y deja la recepción cortada
+ * en el calendario del invitado.
  */
 export function urlCalendario(evento: EventoDelDia): string {
   const inicio = aFecha(evento.inicio);

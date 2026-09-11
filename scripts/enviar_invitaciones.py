@@ -10,8 +10,8 @@ El listado necesita dos columnas, `nombre` y `telefono`:
 
     nombre                                    | telefono
     ------------------------------------------|------------
-    Camila Ospina                             | 3001234567
-    Andres Betancur & Laura Mejia (Tomas)     | 3007654321
+    Camila                             | 3001234567
+    Andres & Laura (Tomas)     | 3007654321
 
 El formato del nombre no es decorativo: "&" separa titulares y los paréntesis
 marcan acompañantes. De ahí salen las casillas individuales del formulario de
@@ -54,7 +54,7 @@ LONGITUD_FIRMA = 12  # debe coincidir con CONFIG.LONGITUD_FIRMA del Apps Script
 # validarla antes de empezar a enviar.
 MARCADORES_DE_PRUEBA = {"nombre": "", "grupo": "", "enlace": ""}
 # Titulares que no son una persona: de estos se saluda el nombre completo
-# ("Familia Betancur"), no la primera palabra.
+# ("Familia Quintero"), no la primera palabra.
 COLECTIVOS = {"familia", "flia", "fam", "sres", "señores", "senores", "hogar"}
 COLUMNAS = ("nombre", "telefono")
 SALIDA_ENLACES = "enlaces-generados.csv"
@@ -92,10 +92,10 @@ class Invitado:
     def saludo(self) -> str:
         """Cómo se le habla a este grupo en el mensaje de WhatsApp.
 
-        `nombre` lleva la sintaxis del grupo ("Andrés Betancur & Laura Mejía
+        `nombre` lleva la sintaxis del grupo ("Andrés & Laura
         (Tomás, Sara)"), que es justo lo que la invitación necesita para
         generar las casillas — pero un saludo de WhatsApp no puede decir
-        "¡Hola Andrés Betancur & Laura Mejía (Tomás, Sara)!".
+        "¡Hola Andrés & Laura (Tomás, Sara)!".
 
         Aquí se queda con los titulares y con el nombre de pila:
         "¡Hola Andrés y Laura!".
@@ -126,7 +126,7 @@ def separar_titulares(nombre: str) -> list[str]:
 def nombre_de_trato(titular: str) -> str:
     """El nombre de pila, salvo cuando el titular no es una persona.
 
-    "Camila Ospina" se saluda como "Camila", pero "Familia Betancur" no se
+    "Camila" se saluda como "Camila", pero "Familia Quintero" no se
     saluda como "Familia": ahí el apellido es justo lo que hace falta.
     """
     palabras = titular.split()

@@ -8,12 +8,12 @@ import {
   resumirAsistencia,
 } from "./confirmacion";
 
-const GRUPO = ["Andrés Betancur", "Laura Mejía", "Tomás", "Sara"];
+const GRUPO = ["Andrés", "Laura", "Tomás", "Sara"];
 
 describe("resumirAsistencia", () => {
   it("separa quiénes van de quiénes no", () => {
     const r = resumirAsistencia(GRUPO, [true, true, false, true]);
-    expect(r.asisten).toEqual(["Andrés Betancur", "Laura Mejía", "Sara"]);
+    expect(r.asisten).toEqual(["Andrés", "Laura", "Sara"]);
     expect(r.noAsisten).toEqual(["Tomás"]);
     expect(r.total).toBe(3);
     expect(r.deCuantos).toBe(4);
@@ -35,7 +35,7 @@ describe("resumirAsistencia", () => {
     // Si el array de casillas llega corto, lo que falta no puede colarse
     // como asistente: acabaría en la cuenta que se le da al salón.
     const r = resumirAsistencia(GRUPO, [true]);
-    expect(r.asisten).toEqual(["Andrés Betancur"]);
+    expect(r.asisten).toEqual(["Andrés"]);
     expect(r.total).toBe(1);
   });
 
@@ -67,7 +67,7 @@ describe("resumenGuardado", () => {
   });
 
   it("a quien viene solo le habla en singular", () => {
-    expect(resumenGuardado(resumirAsistencia(["Camila Ospina"], [true]))).toBe(
+    expect(resumenGuardado(resumirAsistencia(["Camila"], [true]))).toBe(
       "Confirmaste tu asistencia. 🎉",
     );
   });
@@ -79,7 +79,7 @@ describe("resumenGuardado", () => {
   });
 
   it("y en singular si iba una sola persona", () => {
-    expect(resumenGuardado(resumirAsistencia(["Camila Ospina"], [false]))).toBe(
+    expect(resumenGuardado(resumirAsistencia(["Camila"], [false]))).toBe(
       "Nos avisaste que no podrás acompañarnos.",
     );
   });

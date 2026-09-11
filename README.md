@@ -31,7 +31,7 @@ La invitación es personal: cada enlace lleva el nombre del grupo invitado. Para
 verla como la ve un invitado de verdad:
 
 ```
-https://invitacion-digital-sigma.vercel.app/?inv=Andr%C3%A9s%20Betancur%20%26%20Laura%20Mej%C3%ADa%20(Tom%C3%A1s)&tel=3001234567
+https://invitacion-digital-sigma.vercel.app/?inv=Andr%C3%A9s%20%26%20Laura%20(Tom%C3%A1s)&tel=3001234567
 ```
 
 Sin esos parámetros funciona igual, pero saluda de forma genérica y el
@@ -88,7 +88,7 @@ Este proyecto resuelve las tres partes a la vez:
 ### 1 · La identidad viaja en la URL
 
 ```
-Andrés Betancur & Laura Mejía (Tomás, Sara)
+Andrés & Laura (Tomás, Sara)
        │                │            │
   titular 1        titular 2    acompañantes
 ```
@@ -118,7 +118,7 @@ confirmación de otro invitado.
 La solución es una firma HMAC-SHA256 del teléfono que viaja en el enlace:
 
 ```
-…/?inv=Camila+Ospina&tel=3001234567&f=a1b2c3d4e5f6
+…/?inv=Camila&tel=3001234567&f=a1b2c3d4e5f6
                                       └── HMAC-SHA256(telefono, SECRETO)[:12]
 ```
 
@@ -211,7 +211,7 @@ En `localhost:8080` ya está la invitación de ejemplo. Para verla como la verí
 un invitado de verdad, añade sus parámetros a la URL:
 
 ```
-http://localhost:8080/?inv=Camila%20Ospina&tel=3001234567
+http://localhost:8080/?inv=Camila&tel=3001234567
 ```
 
 ---
@@ -386,7 +386,7 @@ El listado es un `.xlsx` o `.csv` con dos columnas, `nombre` y `telefono`, y
 confirmación:
 
 ```
-Andrés Betancur & Laura Mejía (Tomás, Sara)
+Andrés & Laura (Tomás, Sara)
        │                │            │
   titular 1        titular 2    acompañantes
 ```

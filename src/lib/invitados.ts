@@ -5,7 +5,7 @@
  * grupo tiene que poder responder "vamos dos de los tres". Por eso el nombre
  * llega codificado con dos separadores:
  *
- *   "Andrés Betancur & Laura Mejía (Tomás, Sara)"
+ *   "Andrés & Laura (Tomás, Sara)"
  *          │                 │            └── acompañantes (hijos, plus one)
  *          └── principales ──┘
  *
@@ -30,7 +30,7 @@ export function parseInvitado(bruto: string): GrupoInvitado {
   // Formato heredado: los guiones hacían de espacios cuando el enlace se
   // generaba sin codificar la URL ("Rosa-Morales"). Solo se aplica si el
   // nombre no tiene ya espacios, para no romper apellidos compuestos
-  // legítimos como "García-López".
+  // legítimos como "Quintero-Rivas".
   if (!nombre.includes(" ") && nombre.includes("-")) {
     nombre = nombre.replace(/-/g, " ");
   }

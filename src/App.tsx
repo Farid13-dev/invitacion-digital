@@ -30,7 +30,9 @@ export function App() {
   const invitado = useInvitado();
   const rsvp = useRsvp(invitado, evento.rsvp);
 
-  const sonandoMusica = entrada.hecha && entrada.conMusica && evento.musica !== null;
+  // Basta con haber entrado: el botón de la música existe aunque el invitado
+  // eligiera el silencio, para que pueda cambiar de idea sin recargar.
+  const hayMusica = entrada.hecha && evento.musica !== null;
 
   // La bienvenida es una capa fija; sin esto la página de debajo se
   // desplaza igual y el invitado entra a mitad de la invitación.
@@ -46,9 +48,11 @@ export function App() {
         />
       )}
 
-      {/* El audio no existe en la página hasta que alguien lo pide: quien
-          entra en silencio no descarga ni un byte del archivo. */}
-      {sonandoMusica && evento.musica && <MusicaFondo archivo={evento.musica.archivo} />}
+      {/* El archivo no se descarga hasta que alguien pide la música: el
+          componente monta el botón, pero deja el <audio> sin `src`. */}
+      {hayMusica && evento.musica && (
+        <MusicaFondo archivo={evento.musica.archivo} arrancarSonando={entrada.conMusica} />
+      )}
 
       <Portada pareja={evento.pareja} portada={evento.portada} />
       <CuentaRegresiva {...evento.cuentaRegresiva} />

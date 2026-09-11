@@ -8,6 +8,12 @@ import type { GrupoInvitado } from "@/lib/invitados";
 
 type Props = {
   grupo: GrupoInvitado;
+  /**
+   * Falso si al enlace le falta el nombre o el teléfono. Sin teléfono no hay
+   * fila que escribir ni firma que validar: el formulario fallaría siempre en
+   * el servidor, así que ni se muestra.
+   */
+  identificado: boolean;
   rsvp: Rsvp;
 };
 
@@ -18,7 +24,7 @@ type Props = {
  * los tres" sin que nadie tenga que interpretar un mensaje de WhatsApp para
  * darle un número al catering.
  */
-export function Confirmacion({ grupo, rsvp }: Props) {
+export function Confirmacion({ grupo, identificado, rsvp }: Props) {
   const [abierto, setAbierto] = useState(false);
 
   const cerrar = () => {
@@ -38,13 +44,17 @@ export function Confirmacion({ grupo, rsvp }: Props) {
         </TituloSeccion>
 
         <div className="mt-8">
-          {rsvp.fase === "enviado" ? (
-            <p className="animate-fade-up font-display text-xl text-gold-soft">
+          {/* Va atado a `yaConfirmo` y no a la fase "enviado": así el aviso
+              sigue ahí al cerrar el modal y también cuando el invitado vuelve
+              días después a cambiar su respuesta. Antes solo se pintaba
+              mientras el modal lo tapaba, es decir, nunca. */}
+          {rsvp.yaConfirmo && (
+            <p className="animate-fade-up mb-6 font-display text-xl text-gold-soft">
               ¡Ya hemos recibido tu confirmación! 🎉
             </p>
-          ) : (
-            <Boton onClick={() => setAbierto(true)}>{etiquetaBoton}</Boton>
           )}
+
+          <Boton onClick={() => setAbierto(true)}>{etiquetaBoton}</Boton>
         </div>
       </div>
 
@@ -53,13 +63,13 @@ export function Confirmacion({ grupo, rsvp }: Props) {
         alCerrar={cerrar}
         titulo={rsvp.fase === "enviado" ? "¡Gracias!" : "Confirmar Asistencia"}
       >
-        <ContenidoRsvp grupo={grupo} rsvp={rsvp} />
+        <ContenidoRsvp grupo={grupo} identificado={identificado} rsvp={rsvp} />
       </Modal>
     </section>
   );
 }
 
-function ContenidoRsvp({ grupo, rsvp }: Props) {
+function ContenidoRsvp({ grupo, identificado, rsvp }: Props) {
   if (rsvp.fase === "enviado") {
     return (
       <div className="py-4">
@@ -69,7 +79,7 @@ function ContenidoRsvp({ grupo, rsvp }: Props) {
     );
   }
 
-  if (grupo.todos.length === 0) {
+  if (!identificado || rsvp.enlaceInvalido) {
     return (
       <p className="py-4 text-sm text-cream">
         No pudimos identificar tu invitación. Por favor usa el enlace que te enviamos por WhatsApp.
@@ -96,7 +106,7 @@ function ContenidoRsvp({ grupo, rsvp }: Props) {
     );
   }
 
-  return <Formulario grupo={grupo} rsvp={rsvp} />;
+  return <Formulario grupo={grupo} identificado={identificado} rsvp={rsvp} />;
 }
 
 function Formulario({ grupo, rsvp }: Props) {
@@ -121,16 +131,18 @@ function Formulario({ grupo, rsvp }: Props) {
       <fieldset disabled={enviando} className="space-y-3">
         <legend className="sr-only">Asistentes</legend>
 
-        {grupo.todos.map((nombre) => (
+        {/* La clave es la posición, no el nombre: en un grupo puede haber dos
+            personas que se llamen igual y son dos casillas distintas. */}
+        {grupo.todos.map((nombre, i) => (
           <label
-            key={nombre}
+            key={i}
             className="flex cursor-pointer items-center justify-between rounded-xl border border-cream/30 bg-sage/50 px-4 py-3 transition-colors hover:border-gold has-[:focus-visible]:border-gold"
           >
             <span className="text-sm text-cream">{nombre}</span>
             <input
               type="checkbox"
-              checked={rsvp.asistencia[nombre] ?? false}
-              onChange={() => rsvp.alternar(nombre)}
+              checked={rsvp.asistencia[i] ?? false}
+              onChange={() => rsvp.alternar(i)}
               className="h-5 w-5 accent-gold"
             />
           </label>

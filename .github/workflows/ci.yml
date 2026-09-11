@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  web:
+    name: Lint, tipos y build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Comprobación de tipos
+        run: npm run typecheck
+
+      - name: Build
+        run: npx vite build
+
+  script:
+    name: Script de envío
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r scripts/requirements.txt
+
+      - name: Compila sin errores de sintaxis
+        run: python -m compileall -q scripts/enviar_invitaciones.py
+
+      # Comprueba de punta a punta que el listado se lee, los teléfonos se
+      # normalizan y los enlaces se generan, usando el CSV de ejemplo.
+      - name: Genera enlaces desde el listado de ejemplo
+        working-directory: scripts
+        run: |
+          python enviar_invitaciones.py \
+            --archivo data/invitados.ejemplo.csv \
+            --url "https://ejemplo.test" \
+            --modo enlaces \
+            --sin-firma
+          test -s enlaces-generados.csv
+          grep -q "inv=Carlos+Zapata&tel=3001234567" enlaces-generados.csv
+
+      - name: Verifica la firma HMAC
+        working-directory: scripts
+        run: |
+          python - <<'PY'
+          from enviar_invitaciones import firmar
+
+          # Vector fijo: bloquea el algoritmo y la longitud de la firma.
+          # Si alguien los cambia, los enlaces ya enviados dejan de validar y
+          # ningún invitado puede confirmar.
+          # (El contraste con el Apps Script se hace a mano una vez, con
+          #  probarFirma(); ver apps-script/README.md.)
+          esperado = "d3905b1ba0a8"
+          obtenido = firmar("3001234567", "secreto-de-prueba")
+
+          assert obtenido == esperado, f"firma {obtenido!r}, esperada {esperado!r}"
+          print("firma OK:", obtenido)
+          PY

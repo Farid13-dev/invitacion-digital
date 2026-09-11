@@ -1,0 +1,78 @@
+/**
+ * ╔══════════════════════════════════════════════════════════════════════╗
+ * ║  LA PALETA Y LAS TIPOGRAFÍAS DE LA INVITACIÓN VIVEN AQUÍ.           ║
+ * ╚══════════════════════════════════════════════════════════════════════╝
+ *
+ * Cambiar estos ocho colores cambia el aspecto de toda la invitación sin
+ * tocar un solo componente.
+ *
+ * Los colores están en oklch en lugar de hex porque es un espacio perceptual:
+ * la primera cifra es la luminosidad real, así que subirla aclara el color sin
+ * que vire de tono, y dos colores con la misma L se ven igual de claros. Eso
+ * hace que ajustar una paleta sea previsible en vez de prueba y error.
+ *
+ *   oklch(L  C     H)
+ *         │  │     └── tono: 165 = verde, 78 = dorado
+ *         │  └── saturación
+ *         └── luminosidad: 0 = negro, 1 = blanco
+ */
+
+@theme {
+  /* ── Paleta "Hojas" ───────────────────────────────────────────────── */
+  --color-sage: oklch(0.46 0.032 165); /* verde de fondo de las secciones  */
+  --color-sage-deep: oklch(0.36 0.03 166); /* verde del pie y los modales      */
+  --color-sage-soft: oklch(0.9 0.018 150); /* verde casi blanco de los bordes  */
+  --color-gold: oklch(0.72 0.062 78); /* dorado de botones y filetes      */
+  --color-gold-soft: oklch(0.84 0.045 82); /* dorado claro de subtítulos       */
+  --color-cream: oklch(0.975 0.008 95); /* crema del texto sobre verde      */
+  --color-ink: oklch(0.33 0.015 160); /* tinta del texto sobre crema      */
+
+  --color-background: var(--color-cream);
+  --color-foreground: var(--color-ink);
+  --color-card: oklch(1 0 0);
+
+  /* ── Tipografías ──────────────────────────────────────────────────── */
+  --font-script: "Parisienne", cursive; /* nombres y títulos de sección */
+  --font-display: "Cormorant Garamond", serif; /* citas y cifras              */
+  --font-body: "Jost", ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Detalles ─────────────────────────────────────────────────────── */
+  --tracking-widest-xl: 0.28em;
+  --shadow-soft: 0 18px 50px -24px oklch(0.36 0.03 166 / 0.45);
+
+  /* ── Animaciones ──────────────────────────────────────────────────── */
+  --animate-fade-up: fade-up 0.9s ease-out both;
+  --animate-sway: sway 9s ease-in-out infinite;
+  --animate-bob: bob 2.4s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes sway {
+    0%,
+    100% {
+      transform: rotate(-2deg);
+    }
+    50% {
+      transform: rotate(2deg);
+    }
+  }
+
+  @keyframes bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(8px);
+    }
+  }
+}

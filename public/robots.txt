@@ -1,0 +1,4 @@
+# La invitación es personal: cada enlace lleva el nombre y el teléfono de un
+# invitado. No queremos que ninguna de esas URLs acabe indexada.
+User-agent: *
+Disallow: /

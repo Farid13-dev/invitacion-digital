@@ -1,0 +1,4 @@
+# Solo hace falta para leer listados .xlsx.
+# Si exportas el listado a .csv desde Excel, el script funciona con la
+# biblioteca estándar de Python y no necesitas instalar nada.
+openpyxl>=3.1

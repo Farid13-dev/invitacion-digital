@@ -1,0 +1,36 @@
+@import "tailwindcss";
+@import "./tema.css";
+
+@source "../";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    /* La invitación es una columna: cualquier desbordamiento horizontal es
+       un error de layout, no algo que el invitado deba poder desplazar. */
+    overflow-x: hidden;
+  }
+
+  /* Respeta a quien pidió al sistema que reduzca el movimiento: las ramas
+     dejan de mecerse y las entradas aparecen sin desplazamiento. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+    <!--
+      El <title> y las etiquetas Open Graph las inyecta el plugin
+      `metadatos-del-evento` de vite.config.ts leyendo src/config/meta.ts.
+      No las escribas aquí a mano o habrá dos fuentes de verdad.
+    -->
+
+    <!-- Las tipografías vienen de un dominio distinto: abrir la conexión
+         antes de necesitarla ahorra el DNS + TLS del camino crítico. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&family=Parisienne&display=swap"
+    />
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <noscript>
+      Esta invitación necesita JavaScript activado para mostrarse. Si no puedes activarlo,
+      escríbenos por WhatsApp y te contamos todos los detalles.
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

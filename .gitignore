@@ -1,0 +1,44 @@
+# Dependencias
+node_modules
+.pnp
+.pnp.js
+
+# Build
+dist
+dist-ssr
+*.local
+.vercel
+
+# ─────────────────────────────────────────────────────────────────────
+# DATOS PERSONALES — nunca versionar
+# El listado de invitados contiene nombres y teléfonos reales.
+# ─────────────────────────────────────────────────────────────────────
+scripts/data/*
+!scripts/data/.gitkeep
+!scripts/data/invitados.ejemplo.csv
+*.xlsx
+*.xls
+enlaces-generados.csv
+
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Python
+.venv
+venv/
+__pycache__/
+*.py[cod]
+
+# Editores y SO
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs
+*.log
+npm-debug.log*

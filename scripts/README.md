@@ -143,13 +143,14 @@ puedes copiar un enlace suelto y mandarlo a mano.
 
 ## El mensaje
 
-Edita [`mensaje.txt`](./mensaje.txt). Acepta tres marcadores:
+Edita [`mensaje.txt`](./mensaje.txt). Acepta cuatro marcadores:
 
 | Marcador | Qué pone | Ejemplo |
 |---|---|---|
 | `{nombre}` | Cómo se saluda al grupo | `Andrés y Laura` |
 | `{grupo}` | La cadena del listado, entera | `Andrés & Laura (Tomás)` |
 | `{enlace}` | Su enlace único | `https://…/?inv=…&tel=…&f=…` |
+| `{plazo}` | El plazo para confirmar, leído de `rsvp.cierreNuevos` en `src/config/evento.ts` | `23 de noviembre` |
 
 `{nombre}` no es lo mismo que `{grupo}`: el listado usa una sintaxis que la
 invitación necesita para generar las casillas, pero que no se le escribe a

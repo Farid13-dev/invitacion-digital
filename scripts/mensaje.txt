@@ -11,7 +11,7 @@ En la invitación está el mapa para llegar, la confirmación de asistencia y un
 
 {enlace}
 
-La confirmación está abierta hasta el 23 de noviembre. 💌
+La confirmación está abierta hasta el {plazo}. 💌
 
 Con cariño,
 John Jairo y Claudia Patricia

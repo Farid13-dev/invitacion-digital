@@ -92,13 +92,13 @@ export const evento: ConfigEvento = {
   confirmacion: {
     titulo: "Confirmar asistencia",
     subtitulo: "Es importante que confirmes tu asistencia",
-    plazo: "Antes del 23 de noviembre",
   },
 
   rsvp: {
     endpoint: import.meta.env.VITE_RSVP_ENDPOINT ?? "",
-    // El plazo que se le anuncia al invitado: desde aquí no se aceptan
-    // confirmaciones nuevas, para cerrar el número con el salón a tiempo.
+    // El plazo para confirmar. De aquí salen el "Antes del 23 de noviembre"
+    // de la invitación y el {plazo} del mensaje de WhatsApp: cambiarlo aquí
+    // los cambia a los dos (y a Codigo.gs, que un test obliga a igualar).
     cierreNuevos: "2026-11-23T23:59:00-05:00",
     // Quien ya confirmó puede corregirse hasta 3 días antes del evento.
     cierreActualizaciones: "2026-12-23T23:59:00-05:00",
@@ -159,7 +159,6 @@ export const evento: ConfigEvento = {
 
   cierre: {
     mensaje: "Compartimos este día junto a ti",
-    subtitulo: "Comparte tus fotos y videos de este día tan especial",
     hashtag: "#JohnYClaudia",
   },
 

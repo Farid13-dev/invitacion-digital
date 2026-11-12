@@ -28,7 +28,6 @@ export type NombreIcono =
   | "calendario"
   | "camara"
   | "iglesia"
-  | "instagram"
   | "musica"
   | "nota"
   | "percha"
@@ -147,14 +146,10 @@ export type ConfigEvento = {
 
   eventos: EventoDelDia[];
 
+  /** El plazo que se muestra sale de `rsvp`, no de aquí: ver `Confirmacion`. */
   confirmacion: {
     titulo: string;
     subtitulo: string;
-    /**
-     * Fecha límite tal como se le dice al invitado: "Antes del 23 de
-     * noviembre". La que de verdad corta es `rsvp.cierreNuevos`.
-     */
-    plazo: string;
   };
 
   rsvp: ConfigRsvp;
@@ -180,8 +175,7 @@ export type ConfigEvento = {
 
   cierre: {
     mensaje: string;
-    subtitulo: string;
-    /** Con "#". El botón "Ver en Instagram" abre la página de esta etiqueta. */
+    /** Con "#". */
     hashtag: string;
   };
 

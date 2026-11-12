@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { EventoDelDia } from "@/config/tipos";
-import {
-  consultaMapa,
-  urlCalendario,
-  urlHashtagInstagram,
-  urlMapaEmbebido,
-  urlMapaExterno,
-} from "./enlaces";
+import { consultaMapa, urlCalendario, urlMapaEmbebido, urlMapaExterno } from "./enlaces";
 
 const celebracion: EventoDelDia = {
   id: "celebracion",
@@ -64,17 +58,5 @@ describe("enlaces de mapas", () => {
 
   it("el mapa embebido conserva el modo embed", () => {
     expect(new URL(urlMapaEmbebido(celebracion.lugar)).searchParams.get("output")).toBe("embed");
-  });
-});
-
-describe("urlHashtagInstagram", () => {
-  it("quita la almohadilla y pasa a minúsculas, como hace Instagram", () => {
-    expect(urlHashtagInstagram("#JohnYClaudia")).toBe(
-      "https://www.instagram.com/explore/tags/johnyclaudia/",
-    );
-  });
-
-  it("acepta la etiqueta sin almohadilla", () => {
-    expect(urlHashtagInstagram("bodaJyC")).toBe("https://www.instagram.com/explore/tags/bodajyc/");
   });
 });

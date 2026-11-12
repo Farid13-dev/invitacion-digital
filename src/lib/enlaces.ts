@@ -46,9 +46,3 @@ export function urlMapaExterno(lugar: Ubicacion): string {
   const params = new URLSearchParams({ api: "1", query: consultaMapa(lugar) });
   return `https://www.google.com/maps/search/?${params}`;
 }
-
-/** Página de Instagram de una etiqueta: "#JohnYClaudia" → .../tags/johnyclaudia/ */
-export function urlHashtagInstagram(hashtag: string): string {
-  const etiqueta = hashtag.replace(/^#/, "").trim().toLowerCase();
-  return `https://www.instagram.com/explore/tags/${encodeURIComponent(etiqueta)}/`;
-}

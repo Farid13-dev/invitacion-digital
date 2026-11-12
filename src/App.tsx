@@ -68,6 +68,7 @@ export function App() {
         identificado={invitado.identificado}
         rsvp={rsvp}
         textos={evento.confirmacion}
+        cierres={evento.rsvp}
       />
       <Galeria galeria={evento.galeria} />
       <Detalles detalles={evento.detalles} invitado={invitado} endpoint={evento.rsvp.endpoint} />

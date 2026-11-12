@@ -84,6 +84,8 @@ var CONFIG = {
 
 /** GET: devuelve lo que este invitado había confirmado antes, si es que confirmó. */
 function doGet(e) {
+  if (!e || !e.parameter) return ejecutadoDesdeElEditor("doGet");
+
   try {
     var telefono = normalizarTelefono(e.parameter.telefono);
     var firma = String(e.parameter.firma || "");
@@ -116,6 +118,8 @@ function doGet(e) {
 
 /** POST: escribe o actualiza la fila de este invitado. */
 function doPost(e) {
+  if (!e || !e.postData) return ejecutadoDesdeElEditor("doPost");
+
   var candado = LockService.getScriptLock();
 
   try {
@@ -329,6 +333,20 @@ function contarFilas(hoja, telefono) {
     .filter(function (fila) {
       return normalizarTelefono(fila[0]) === telefono;
     }).length;
+}
+
+/**
+ * Al pulsar ▶ sobre doGet o doPost en el editor, Apps Script las llama sin
+ * ninguna petición y fallaban con un "Cannot read properties of undefined"
+ * que parecía un error del script. Solo responden a la invitación.
+ */
+function ejecutadoDesdeElEditor(nombre) {
+  console.log(
+    nombre +
+      " no se ejecuta desde el editor: responde a la invitación publicada. " +
+      "Para comprobar la instalación ejecuta prepararHoja() y probarFirma().",
+  );
+  return responder({ status: "error", message: "Sin petición." });
 }
 
 function responder(objeto) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aFecha, tiempoRestante, yaPaso } from "./fechas";
+import { aFecha, fechaLegible, tiempoRestante, yaPaso } from "./fechas";
 
 describe("aFecha", () => {
   it("respeta el offset de la configuración, no la zona del navegador", () => {
@@ -45,5 +45,21 @@ describe("tiempoRestante", () => {
       minutos: 0,
       segundos: 0,
     });
+  });
+});
+
+describe("fechaLegible", () => {
+  it("escribe el día y el mes en español", () => {
+    expect(fechaLegible("2026-11-23T23:59:00-05:00")).toBe("23 de noviembre");
+    expect(fechaLegible("2027-01-05T10:00:00-05:00")).toBe("5 de enero");
+  });
+
+  it("respeta el día escrito aunque en UTC ya sea el siguiente", () => {
+    // 23:59 en Colombia son las 04:59 del 24 en UTC: el invitado debe leer 23.
+    expect(fechaLegible("2026-12-23T23:59:00-05:00")).toBe("23 de diciembre");
+  });
+
+  it("rechaza una fecha inválida en vez de inventar un plazo", () => {
+    expect(() => fechaLegible("23 de noviembre")).toThrow();
   });
 });

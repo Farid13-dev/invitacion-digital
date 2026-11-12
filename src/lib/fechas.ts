@@ -15,6 +15,34 @@ export function aFecha(iso: string): Date {
   return fecha;
 }
 
+const MESES = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+] as const;
+
+/**
+ * "2026-11-23T23:59:00-05:00" → "23 de noviembre".
+ *
+ * Lee el día tal como está escrito, sin pasarlo por la zona horaria del
+ * navegador: las 23:59 del 23 en Colombia ya son el 24 en España, y un
+ * invitado que abriera desde allí leería un plazo que no es.
+ */
+export function fechaLegible(iso: string): string {
+  aFecha(iso); // valida antes de recortar
+  const [, mes, dia] = /^\d{4}-(\d{2})-(\d{2})/.exec(iso) ?? [];
+  return `${Number(dia)} de ${MESES[Number(mes) - 1]}`;
+}
+
 export function yaPaso(iso: string, ahora: Date = new Date()): boolean {
   return ahora.getTime() > aFecha(iso).getTime();
 }

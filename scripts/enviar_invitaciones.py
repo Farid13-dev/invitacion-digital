@@ -52,7 +52,14 @@ from pathlib import Path
 LONGITUD_FIRMA = 12  # debe coincidir con CONFIG.LONGITUD_FIRMA del Apps Script
 # Marcadores que acepta la plantilla del mensaje, con valores de mentira para
 # validarla antes de empezar a enviar.
-MARCADORES_DE_PRUEBA = {"nombre": "", "grupo": "", "enlace": ""}
+MARCADORES_DE_PRUEBA = {"nombre": "", "grupo": "", "enlace": "", "plazo": ""}
+# De aquí sale {plazo}: la misma fecha que corta el formulario y que muestra
+# la invitación, para que el mensaje no pueda anunciar otra.
+RUTA_EVENTO = Path(__file__).resolve().parent.parent / "src" / "config" / "evento.ts"
+MESES = (
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+)
 # Titulares que no son una persona: de estos se saluda el nombre completo
 # ("Familia Quintero"), no la primera palabra.
 COLECTIVOS = {"familia", "flia", "fam", "sres", "señores", "senores", "hogar"}
@@ -298,6 +305,25 @@ def construir_url_whatsapp(telefono: str, indicativo: str, mensaje: str) -> str:
     return "https://web.whatsapp.com/send" f"?phone={numero}&text={urllib.parse.quote(mensaje)}"
 
 
+def leer_plazo(ruta: Path = RUTA_EVENTO) -> str:
+    """El plazo para confirmar tal como lo lee el invitado: "23 de noviembre".
+
+    Sale de `rsvp.cierreNuevos` en evento.ts. Se toma el día tal como está
+    escrito, sin convertir zonas horarias, igual que hace la invitación.
+    """
+    try:
+        texto = ruta.read_text(encoding="utf-8")
+    except OSError:
+        raise SystemExit(f"No se pudo leer {ruta} para sacar el plazo de confirmación.")
+
+    encontrado = re.search(r'cierreNuevos:\s*"\d{4}-(\d{2})-(\d{2})', texto)
+    if not encontrado:
+        raise SystemExit(f"No se encontró `cierreNuevos` en {ruta}.")
+
+    mes, dia = (int(g) for g in encontrado.groups())
+    return f"{dia} de {MESES[mes - 1]}"
+
+
 def cargar_plantilla(ruta: Path | None) -> str:
     if ruta is None:
         return PLANTILLA_POR_DEFECTO
@@ -320,7 +346,7 @@ def cargar_plantilla(ruta: Path | None) -> str:
     except (KeyError, IndexError, ValueError) as error:
         raise SystemExit(
             f"{ruta} tiene un marcador que no se puede rellenar: {error}\n"
-            f"Los válidos son {{nombre}}, {{grupo}} y {{enlace}}. Para escribir "
+            f"Los válidos son {{nombre}}, {{grupo}}, {{enlace}} y {{plazo}}. Para escribir "
             "una llave literal, dóblala: {{{{ }}}}"
         )
 
@@ -498,13 +524,14 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
     print()
-    return enviar(enlaces, args, plantilla)
+    return enviar(enlaces, args, plantilla, leer_plazo())
 
 
 def enviar(
     enlaces: list[tuple[Invitado, str]],
     args: argparse.Namespace,
     plantilla: str,
+    plazo: str,
 ) -> int:
     total = len(enlaces)
     ultima_fila = 0
@@ -520,7 +547,9 @@ def enviar(
                 time.sleep(1.5)
                 continue
 
-            mensaje = plantilla.format(nombre=inv.saludo, grupo=inv.nombre, enlace=enlace)
+            mensaje = plantilla.format(
+                nombre=inv.saludo, grupo=inv.nombre, enlace=enlace, plazo=plazo
+            )
             webbrowser.open(construir_url_whatsapp(inv.telefono, args.indicativo, mensaje))
             print(f"  {etiqueta}  ({inv.telefono})")
 

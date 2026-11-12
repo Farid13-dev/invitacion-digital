@@ -1,8 +1,7 @@
-import { Boton } from "@/components/ui/Boton";
 import { NombresPareja } from "@/components/ui/NombresPareja";
 import { TituloSeccion } from "@/components/ui/TituloSeccion";
 import type { ConfigEvento } from "@/config/tipos";
-import { urlCalendario, urlHashtagInstagram } from "@/lib/enlaces";
+import { urlCalendario } from "@/lib/enlaces";
 
 type Props = Pick<ConfigEvento, "pareja" | "cierre" | "eventos"> & {
   /** Si hay tarjeta de canciones, el pie enlaza a ella. */
@@ -16,14 +15,9 @@ export function Cierre({ pareja, cierre, eventos, hayCancion }: Props) {
   return (
     <>
       {/* El hashtag, sobre la banda durazno ondulada. */}
-      <section className="banda-durazno px-6 py-24 text-center md:py-36">
-        <TituloSeccion subtitulo={cierre.subtitulo} icono="instagram">
-          {cierre.mensaje}
-        </TituloSeccion>
-        <p className="mt-3 font-display text-4xl text-oliva">{cierre.hashtag}</p>
-        <Boton href={urlHashtagInstagram(cierre.hashtag)} target="_blank" className="mt-5">
-          Ver en Instagram
-        </Boton>
+      <section className="banda-durazno px-6 py-24 text-center md:py-32">
+        <TituloSeccion>{cierre.mensaje}</TituloSeccion>
+        <p className="mt-4 font-display text-4xl text-rosa">{cierre.hashtag}</p>
       </section>
 
       <div className="mx-auto flex max-w-4xl flex-col items-center justify-between gap-10 px-6 py-20 md:flex-row">
@@ -60,7 +54,8 @@ export function Cierre({ pareja, cierre, eventos, hayCancion }: Props) {
         <span aria-label="amor" role="img">
           ♥
         </span>{" "}
-        para {pareja.nombreA} &amp; {pareja.nombreB}
+        para <span className="whitespace-nowrap">{pareja.nombreA}</span> &amp;{" "}
+        <span className="whitespace-nowrap">{pareja.nombreB}</span>
       </footer>
     </>
   );

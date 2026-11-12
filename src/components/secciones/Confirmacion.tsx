@@ -4,9 +4,10 @@ import { CAMPO } from "@/components/ui/campo";
 import { Icono } from "@/components/ui/Icono";
 import { Modal } from "@/components/ui/Modal";
 import { TituloSeccion } from "@/components/ui/TituloSeccion";
-import type { ConfigEvento } from "@/config/tipos";
+import type { ConfigEvento, ConfigRsvp } from "@/config/tipos";
 import type { Rsvp } from "@/hooks/useRsvp";
 import { despedida, etiquetaAccion, resumenGuardado, resumirAsistencia } from "@/lib/confirmacion";
+import { fechaLegible } from "@/lib/fechas";
 import type { GrupoInvitado } from "@/lib/invitados";
 import { SIN_IDENTIFICAR } from "@/lib/rsvp";
 
@@ -38,9 +39,22 @@ export function Confirmacion({
   identificado,
   rsvp,
   textos,
-}: Props & { textos: ConfigEvento["confirmacion"] }) {
+  cierres,
+}: Props & {
+  textos: ConfigEvento["confirmacion"];
+  cierres: Pick<ConfigRsvp, "cierreNuevos" | "cierreActualizaciones">;
+}) {
   const [abierto, setAbierto] = useState(false);
   const accion = etiquetaAccion(rsvp.yaConfirmo);
+
+  // El plazo que le importa a cada invitado: quien no ha respondido ve el de
+  // confirmar; quien ya respondió, el de corregir. Cerrado, no se muestra: el
+  // formulario ya explica por qué.
+  const plazo = !rsvp.puedeConfirmar
+    ? null
+    : rsvp.yaConfirmo
+      ? `Puedes cambiarla hasta el ${fechaLegible(cierres.cierreActualizaciones)}`
+      : `Antes del ${fechaLegible(cierres.cierreNuevos)}`;
 
   const cerrar = () => {
     setAbierto(false);
@@ -53,10 +67,12 @@ export function Confirmacion({
 
       {/* El plazo, a la vista y antes del botón: es la información que hace
           que alguien confirme hoy en vez de "luego". */}
-      <p className="mt-5 inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-borde px-4 py-2 text-sm text-oliva sm:px-5">
-        <Icono nombre="calendario" className="size-5 text-rosa-claro" />
-        {textos.plazo}
-      </p>
+      {plazo ? (
+        <p className="mt-5 inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-borde px-4 py-2 text-sm text-oliva sm:px-5">
+          <Icono nombre="calendario" className="size-5 text-rosa-claro" />
+          {plazo}
+        </p>
+      ) : null}
 
       {/* Describe lo que quedó registrado en la hoja, no un genérico: así el
           invitado comprueba de un vistazo que dice lo que quiso decir. Sale de

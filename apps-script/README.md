@@ -153,6 +153,8 @@ desactiva el endpoint sin borrar la hoja ni los datos.
 | Los cambios en el código no se notan | Apps Script sirve la **implementación publicada**, no el editor: hay que crear una versión nueva en *Gestionar implementaciones* |
 | La consulta tarda segundos | Normal en la primera petición tras un rato (arranque en frío de Apps Script) |
 | `No existe la hoja "Confirmaciones"` | Falta ejecutar `prepararHoja` (paso 5) |
+| La URL responde "No se encontró la función de la secuencia de comandos: doGet" | La implementación apunta a una versión sin el código: guarda el código (Ctrl+S) y crea una versión nueva en *Gestionar implementaciones* |
+| "doGet no se ejecuta desde el editor" en el registro | Se pulsó ▶ sobre `doGet`. Es normal: solo responde a la invitación. Para probar, ejecuta `prepararHoja` o `probarFirma` |
 
 ---
 

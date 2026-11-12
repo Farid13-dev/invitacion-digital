@@ -13,14 +13,22 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-body);
+    /* Sin esto el texto sin clase propia hereda los 16 px fijos del
+       navegador y se queda fuera de la escala fluida de tema.css. */
+    font-size: var(--text-base);
     -webkit-font-smoothing: antialiased;
     /* La invitación es una columna: cualquier desbordamiento horizontal es
        un error de layout, no algo que el invitado deba poder desplazar. */
     overflow-x: hidden;
   }
 
-  /* Respeta a quien pidió al sistema que reduzca el movimiento: las ramas
-     dejan de mecerse y las entradas aparecen sin desplazamiento. */
+  ::selection {
+    background-color: var(--color-mantequilla);
+    color: var(--color-oliva);
+  }
+
+  /* Respeta a quien pidió al sistema que reduzca el movimiento: los adornos
+     dejan de flotar y las entradas aparecen sin desplazamiento. */
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
@@ -33,5 +41,48 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+  }
+}
+
+@layer components {
+  /*
+   * Banda ondulada color durazno con textura de puntos, la del cierre.
+   *
+   * La forma es una máscara SVG estirada al tamaño de la sección: así los
+   * bordes ondulados recortan también la textura, cosa que no se consigue
+   * pintando olas de color liso encima y debajo.
+   */
+  .banda-durazno {
+    --puntos: oklch(0.55 0.04 50 / 0.28);
+    background:
+      radial-gradient(circle, var(--puntos) 1.2px, transparent 1.7px) 0 0 / 30px 30px,
+      radial-gradient(ellipse 40% 60% at 30% 40%, oklch(0.92 0.06 55 / 0.8), transparent 70%),
+      radial-gradient(ellipse 35% 55% at 75% 60%, oklch(0.93 0.055 70 / 0.8), transparent 70%),
+      linear-gradient(100deg, oklch(0.965 0.03 70), oklch(0.945 0.045 55) 50%, oklch(0.97 0.03 85));
+    --forma: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 400' preserveAspectRatio='none'%3E%3Cpath d='M0 70C420 20 1020 20 1440 0V330C1020 350 420 340 0 400Z'/%3E%3C/svg%3E");
+    -webkit-mask: var(--forma) 0 0 / 100% 100% no-repeat;
+    mask: var(--forma) 0 0 / 100% 100% no-repeat;
+  }
+}
+
+/*
+ * Par de botones que se ceden el protagonismo: el que tiene el puntero encima
+ * se vuelve oliva y su compañero pasa a mantequilla, sea cual sea su variante
+ * en reposo. Así nunca hay dos botones oliva a la vez y el ojo sabe cuál se
+ * va a pulsar.
+ *
+ * Va fuera de `@layer` a propósito: las utilidades de Tailwind viven en una
+ * capa, y una regla sin capa les gana sin pelear por especificidad. Solo en
+ * dispositivos con puntero: en pantallas táctiles no hay "encima".
+ */
+@media (hover: hover) {
+  .par-botones:has(> :hover) > :not(:hover) {
+    background-color: var(--color-mantequilla);
+    color: var(--color-oliva);
+  }
+
+  .par-botones:has(> :hover) > :hover {
+    background-color: var(--color-oliva);
+    color: var(--color-marfil);
   }
 }

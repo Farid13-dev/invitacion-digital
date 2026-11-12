@@ -21,6 +21,19 @@ export type Pareja = {
   nombreB: string;
 };
 
+/** Iconos de trazo fino disponibles (ver `src/components/ui/Icono.tsx`). */
+export type NombreIcono =
+  | "anillos"
+  | "brindis"
+  | "calendario"
+  | "camara"
+  | "iglesia"
+  | "instagram"
+  | "musica"
+  | "nota"
+  | "percha"
+  | "regalo";
+
 export type Ubicacion = {
   nombre: string;
   /** Ciudad o referencia corta que se muestra bajo el nombre del lugar. */
@@ -28,9 +41,9 @@ export type Ubicacion = {
   /**
    * "latitud,longitud" — en Google Maps: clic derecho sobre el punto exacto
    * y "copiar coordenadas". De aquí salen el mapa embebido y el enlace a
-   * "¿Cómo llegar?".
+   * "¿Cómo llegar?". Si falta, el mapa busca por `nombre` y `direccion`.
    */
-  coordenadas: string;
+  coordenadas?: string;
 };
 
 export type EventoDelDia = {
@@ -44,8 +57,11 @@ export type EventoDelDia = {
   inicio: string;
   /** Duración en minutos. Solo se usa para el evento de Google Calendar. */
   duracionMinutos: number;
-  /** Cómo se le muestra la fecha al invitado, en palabras. */
+  /** Cómo se le muestra el día al invitado, p. ej. "Sábado 26 de diciembre". */
   cuando: string;
+  /** "4:00 p.m." */
+  hora: string;
+  icono?: NombreIcono;
   lugar: Ubicacion;
 };
 
@@ -62,22 +78,33 @@ export type ConfigRsvp = {
    */
   cierreNuevos: string;
   /**
-   * ISO con offset. Pasada esta fecha nadie puede modificar su respuesta.
-   * Debe coincidir con CIERRE_ACTUALIZACIONES en el Apps Script.
+   * ISO con offset. Pasada esta fecha nadie puede modificar su respuesta ni
+   * sugerir canciones. Debe coincidir con CIERRE_ACTUALIZACIONES.
    */
   cierreActualizaciones: string;
 };
 
-/**
- * Bloque de contenido que se abre en un modal (dress code, regalos, notas...).
- * `contenido` acepta **negritas** con dobles asteriscos y saltos de línea.
- */
-export type Detalle = {
-  id: string;
+/** Texto de una tarjeta: título, una línea de resumen y el botón. */
+export type Tarjeta = {
   titulo: string;
   resumen: string;
   cta: string;
+  icono?: NombreIcono;
+};
+
+/**
+ * Tarjeta que abre un modal (dress code, regalos, notas...).
+ * `contenido` acepta **negritas** con dobles asteriscos y saltos de línea.
+ */
+export type Detalle = Tarjeta & {
+  id: string;
   contenido: string;
+  /**
+   * Muestras de color tachadas, para un dress code que pide evitar colores.
+   * Un círculo tachado se entiende de un vistazo, sin leer, y no deja dudas
+   * de qué tono es "azul baby".
+   */
+  coloresEvitar?: Array<{ nombre: string; color: string }>;
 };
 
 export type Musica = {
@@ -95,10 +122,14 @@ export type ConfigEvento = {
   };
 
   portada: {
-    /** Fecha en formato corto para el encabezado, p. ej. "05.09.2026". */
+    /** "26.12.2026" */
     fechaCorta: string;
     frase: string;
+    /** Autor o cita de la frase. Opcional. */
+    fraseFuente?: string;
     imagen: ImagenResponsive;
+    /** `object-position` de la foto, p. ej. "50% 30%". Por defecto, el centro. */
+    encuadre?: string;
   };
 
   cuentaRegresiva: {
@@ -116,6 +147,16 @@ export type ConfigEvento = {
 
   eventos: EventoDelDia[];
 
+  confirmacion: {
+    titulo: string;
+    subtitulo: string;
+    /**
+     * Fecha límite tal como se le dice al invitado: "Antes del 23 de
+     * noviembre". La que de verdad corta es `rsvp.cierreNuevos`.
+     */
+    plazo: string;
+  };
+
   rsvp: ConfigRsvp;
 
   galeria: {
@@ -127,6 +168,11 @@ export type ConfigEvento = {
   detalles: {
     titulo: string;
     subtitulo: string;
+    /**
+     * Tarjeta para sugerir canciones. Se guardan en la pestaña "Canciones"
+     * de la misma hoja del RSVP. `null` la quita.
+     */
+    cancion: Tarjeta | null;
     items: Detalle[];
   };
 
@@ -134,9 +180,11 @@ export type ConfigEvento = {
 
   cierre: {
     mensaje: string;
+    subtitulo: string;
+    /** Con "#". El botón "Ver en Instagram" abre la página de esta etiqueta. */
     hashtag: string;
   };
 
-  /** `null` desactiva la pantalla de bienvenida con música. */
+  /** `null` quita la música: el portón muestra un solo botón "Ingresar". */
   musica: Musica | null;
 };

@@ -16,8 +16,8 @@ type Props = {
 const UMBRAL_SWIPE_PX = 50;
 
 const FLECHA =
-  "absolute z-10 rounded-full p-2 text-cream/80 transition-colors hover:bg-cream/10 " +
-  "hover:text-cream focus-visible:outline-2 focus-visible:outline-gold";
+  "absolute z-10 rounded-full p-2 text-marfil/80 transition-colors hover:bg-marfil/10 " +
+  "hover:text-marfil focus-visible:outline-2 focus-visible:outline-mantequilla";
 
 /** Visor a pantalla completa: teclado en escritorio, gestos en móvil. */
 export function Lightbox({ fotos, indice, alCerrar, alAnterior, alSiguiente }: Props) {
@@ -53,7 +53,7 @@ export function Lightbox({ fotos, indice, alCerrar, alAnterior, alSiguiente }: P
       role="dialog"
       aria-modal="true"
       aria-label={`Foto ${indice + 1} de ${fotos.length}`}
-      className="animate-fade-up fixed inset-0 z-[60] flex items-center justify-center bg-black/90 px-4"
+      className="animate-fade-up fixed inset-0 z-[60] flex items-center justify-center bg-[oklch(0.2_0.025_120/0.96)] px-4"
       onClick={alCerrar}
       onTouchStart={alTocar}
       onTouchEnd={alSoltarTacto}
@@ -99,7 +99,7 @@ export function Lightbox({ fotos, indice, alCerrar, alAnterior, alSiguiente }: P
         <IconoFlecha direccion="derecha" />
       </button>
 
-      <p className="absolute bottom-6 text-xs tracking-widest-xl text-cream/60">
+      <p className="absolute bottom-6 text-xs tracking-[0.28em] text-marfil/60">
         {indice + 1} / {fotos.length}
       </p>
     </div>

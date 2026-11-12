@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { ImagenResponsive } from "@/config/tipos";
 
 type Props = {
@@ -9,6 +10,7 @@ type Props = {
   className?: string;
   loading?: "lazy" | "eager";
   fetchPriority?: "high" | "low" | "auto";
+  style?: CSSProperties;
 };
 
 /**
@@ -29,6 +31,7 @@ export function Imagen({
   className,
   loading = "lazy",
   fetchPriority,
+  style,
 }: Props) {
   return (
     <picture>
@@ -45,6 +48,7 @@ export function Imagen({
         fetchPriority={fetchPriority}
         draggable={false}
         className={className}
+        style={style}
       />
     </picture>
   );

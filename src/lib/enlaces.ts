@@ -1,4 +1,4 @@
-import type { EventoDelDia } from "@/config/tipos";
+import type { EventoDelDia, Ubicacion } from "@/config/tipos";
 import { aFecha } from "./fechas";
 
 /** Formato compacto UTC que exige Google Calendar: 20270515T210000Z */
@@ -25,16 +25,30 @@ export function urlCalendario(evento: EventoDelDia): string {
   return `https://calendar.google.com/calendar/render?${params}`;
 }
 
-/** Las coordenadas se limpian: un espacio suelto rompe el enlace de Maps. */
-function limpiarCoordenadas(coordenadas: string): string {
-  return coordenadas.replace(/\s+/g, "");
+/**
+ * Qué se le pide a Google Maps: las coordenadas si las hay, y si no el nombre
+ * del lugar con su ciudad.
+ *
+ * Las coordenadas se limpian porque un espacio suelto tras la coma rompe el
+ * enlace. El nombre no se toca: ahí los espacios son parte de la búsqueda.
+ */
+export function consultaMapa(lugar: Ubicacion): string {
+  const coordenadas = lugar.coordenadas?.replace(/\s+/g, "");
+  return coordenadas || `${lugar.nombre}, ${lugar.direccion}`;
 }
 
-export function urlMapaEmbebido(coordenadas: string): string {
-  return `https://maps.google.com/maps?q=${limpiarCoordenadas(coordenadas)}&output=embed`;
+export function urlMapaEmbebido(lugar: Ubicacion): string {
+  const params = new URLSearchParams({ q: consultaMapa(lugar), output: "embed" });
+  return `https://maps.google.com/maps?${params}`;
 }
 
-export function urlMapaExterno(coordenadas: string): string {
-  const params = new URLSearchParams({ api: "1", query: limpiarCoordenadas(coordenadas) });
+export function urlMapaExterno(lugar: Ubicacion): string {
+  const params = new URLSearchParams({ api: "1", query: consultaMapa(lugar) });
   return `https://www.google.com/maps/search/?${params}`;
+}
+
+/** Página de Instagram de una etiqueta: "#JohnYClaudia" → .../tags/johnyclaudia/ */
+export function urlHashtagInstagram(hashtag: string): string {
+  const etiqueta = hashtag.replace(/^#/, "").trim().toLowerCase();
+  return `https://www.instagram.com/explore/tags/${encodeURIComponent(etiqueta)}/`;
 }

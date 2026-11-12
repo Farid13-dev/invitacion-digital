@@ -1,6 +1,5 @@
-import { Ornamento } from "@/components/ui/Ornamento";
 import type { ConfigEvento } from "@/config/tipos";
-import type { GrupoInvitado } from "@/lib/invitados";
+import { textoCupos, type GrupoInvitado } from "@/lib/invitados";
 
 type Props = {
   grupo: GrupoInvitado;
@@ -12,40 +11,36 @@ type Props = {
  * distinto en vez de la misma imagen reenviada ochenta veces.
  */
 export function Invitados({ grupo, textos }: Props) {
-  const { principales, extras } = grupo;
+  const { todos } = grupo;
+
+  if (todos.length === 0) {
+    return (
+      <section className="px-6 pt-6 text-center">
+        <h2 className="font-display text-2xl">{textos.sinInvitado.titulo}</h2>
+        <p className="mx-auto mt-2 max-w-md text-base text-tenue">{textos.sinInvitado.mensaje}</p>
+      </section>
+    );
+  }
 
   return (
-    <section className="relative overflow-hidden px-6 py-24">
-      <Ornamento className="-right-16 top-4 h-56 w-56 rotate-180 opacity-20" />
+    <section className="px-6 pt-6 text-center">
+      <span className="mx-auto flex size-10 items-center justify-center rounded-full bg-rosa text-base font-semibold text-marfil">
+        {todos.length}
+      </span>
+      <h2 className="mt-2 font-display text-xl uppercase tracking-[0.2em]">{textos.etiqueta}</h2>
+      <p className="mt-1 text-sm text-tenue">{textoCupos(todos.length)}</p>
 
-      <div className="relative z-10 mx-auto max-w-md rounded-3xl border border-sage-soft bg-card/60 px-8 py-12 text-center shadow-soft">
-        <h2 className="text-xs uppercase tracking-widest-xl text-gold">{textos.etiqueta}</h2>
+      {/* La clave es la posición, no el nombre: en un grupo puede haber dos
+          personas que se llamen igual. */}
+      <ul className="mt-4 space-y-2 text-lg">
+        {todos.map((nombre, i) => (
+          <li key={i} className="mx-auto w-fit border-b border-borde px-4 pb-1">
+            {nombre}
+          </li>
+        ))}
+      </ul>
 
-        {principales.length > 0 ? (
-          <div className="mt-8">
-            <div className="space-y-1">
-              {principales.map((nombre) => (
-                <p key={nombre} className="font-display text-3xl text-sage-deep">
-                  {nombre}
-                </p>
-              ))}
-            </div>
-
-            {extras.length > 0 && (
-              <p className="mt-3 text-xs font-light italic text-ink/60">
-                Acompañantes: {extras.join(", ")}
-              </p>
-            )}
-
-            <p className="mt-8 text-sm font-light italic text-ink/70">{textos.mensaje}</p>
-          </div>
-        ) : (
-          <div className="mt-8">
-            <p className="font-display text-2xl text-sage-deep">{textos.sinInvitado.titulo}</p>
-            <p className="mt-4 text-sm font-light text-ink/70">{textos.sinInvitado.mensaje}</p>
-          </div>
-        )}
-      </div>
+      <p className="mx-auto mt-5 max-w-md text-base text-tenue">{textos.mensaje}</p>
     </section>
   );
 }

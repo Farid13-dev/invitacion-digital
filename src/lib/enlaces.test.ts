@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { EventoDelDia } from "@/config/tipos";
-import { urlCalendario, urlMapaEmbebido, urlMapaExterno } from "./enlaces";
+import {
+  consultaMapa,
+  urlCalendario,
+  urlHashtagInstagram,
+  urlMapaEmbebido,
+  urlMapaExterno,
+} from "./enlaces";
 
 const celebracion: EventoDelDia = {
   id: "celebracion",
@@ -8,6 +14,7 @@ const celebracion: EventoDelDia = {
   inicio: "2027-05-15T18:30:00-05:00",
   duracionMinutos: 210,
   cuando: "Sábado 15 de mayo",
+  hora: "6:30 p.m.",
   lugar: {
     nombre: "Hacienda El Mirador",
     direccion: "Envigado, Antioquia",
@@ -32,7 +39,42 @@ describe("urlCalendario", () => {
 describe("enlaces de mapas", () => {
   it("limpia los espacios de las coordenadas", () => {
     // Un espacio suelto tras la coma rompe el enlace de Google Maps.
-    expect(urlMapaEmbebido(celebracion.lugar.coordenadas)).toContain("q=6.166893,-75.583961");
-    expect(urlMapaExterno(celebracion.lugar.coordenadas)).toContain("query=6.166893%2C-75.583961");
+    expect(consultaMapa(celebracion.lugar)).toBe("6.166893,-75.583961");
+    expect(new URL(urlMapaEmbebido(celebracion.lugar)).searchParams.get("q")).toBe(
+      "6.166893,-75.583961",
+    );
+    expect(new URL(urlMapaExterno(celebracion.lugar)).searchParams.get("query")).toBe(
+      "6.166893,-75.583961",
+    );
+  });
+
+  it("sin coordenadas busca por nombre y ciudad, con sus espacios", () => {
+    const lugar = { nombre: "Casa Roma", direccion: "Florencia, Caquetá" };
+    expect(consultaMapa(lugar)).toBe("Casa Roma, Florencia, Caquetá");
+    expect(new URL(urlMapaExterno(lugar)).searchParams.get("query")).toBe(
+      "Casa Roma, Florencia, Caquetá",
+    );
+  });
+
+  it("unas coordenadas vacías cuentan como ausentes", () => {
+    // Un `coordenadas: ""` olvidado no debe mandar a Google una búsqueda vacía.
+    const lugar = { nombre: "Casa Roma", direccion: "Florencia, Caquetá", coordenadas: "  " };
+    expect(consultaMapa(lugar)).toBe("Casa Roma, Florencia, Caquetá");
+  });
+
+  it("el mapa embebido conserva el modo embed", () => {
+    expect(new URL(urlMapaEmbebido(celebracion.lugar)).searchParams.get("output")).toBe("embed");
+  });
+});
+
+describe("urlHashtagInstagram", () => {
+  it("quita la almohadilla y pasa a minúsculas, como hace Instagram", () => {
+    expect(urlHashtagInstagram("#JohnYClaudia")).toBe(
+      "https://www.instagram.com/explore/tags/johnyclaudia/",
+    );
+  });
+
+  it("acepta la etiqueta sin almohadilla", () => {
+    expect(urlHashtagInstagram("bodaJyC")).toBe("https://www.instagram.com/explore/tags/bodajyc/");
   });
 });

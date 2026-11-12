@@ -3,47 +3,80 @@
  * ║  LA PALETA Y LAS TIPOGRAFÍAS DE LA INVITACIÓN VIVEN AQUÍ.           ║
  * ╚══════════════════════════════════════════════════════════════════════╝
  *
- * Cambiar estos ocho colores cambia el aspecto de toda la invitación sin
- * tocar un solo componente.
+ * Cambiar estos colores cambia el aspecto de toda la invitación sin tocar un
+ * solo componente.
  *
  * Los colores están en oklch en lugar de hex porque es un espacio perceptual:
  * la primera cifra es la luminosidad real, así que subirla aclara el color sin
- * que vire de tono, y dos colores con la misma L se ven igual de claros. Eso
- * hace que ajustar una paleta sea previsible en vez de prueba y error.
+ * que vire de tono, y dos colores con la misma L se ven igual de claros.
  *
  *   oklch(L  C     H)
- *         │  │     └── tono: 165 = verde, 78 = dorado
+ *         │  │     └── tono: 95 = mantequilla, 125 = oliva, 30-40 = rosa
  *         │  └── saturación
  *         └── luminosidad: 0 = negro, 1 = blanco
+ *
+ * Contrastes comprobados (WCAG): oliva sobre marfil 8:1 y sobre mantequilla
+ * 6.7:1 —los dos sentidos del hover de los botones—; texto tenue 5.8:1. El
+ * `rosa` es solo para texto grande (nombres, cifras) y el `rosa-claro` solo
+ * para iconos y adornos: como texto pequeño no llegan al mínimo legible.
  */
 
 @theme {
-  /* ── Paleta "Hojas" ───────────────────────────────────────────────── */
-  --color-sage: oklch(0.46 0.032 165); /* verde de fondo de las secciones  */
-  --color-sage-deep: oklch(0.36 0.03 166); /* verde del pie y los modales      */
-  --color-sage-soft: oklch(0.9 0.018 150); /* verde casi blanco de los bordes  */
-  --color-gold: oklch(0.72 0.062 78); /* dorado de botones y filetes      */
-  --color-gold-soft: oklch(0.84 0.045 82); /* dorado claro de subtítulos       */
-  --color-cream: oklch(0.975 0.008 95); /* crema del texto sobre verde      */
-  --color-ink: oklch(0.33 0.015 160); /* tinta del texto sobre crema      */
+  /* ── Paleta "Yellow Bloom" ────────────────────────────────────────── */
+  --color-marfil: oklch(0.993 0.018 100); /* fondo y portón                 */
+  --color-tarjeta: oklch(1 0.01 95); /* tarjetas y polaroids                   */
+  --color-mantequilla: oklch(0.93 0.08 95); /* botones suaves, olas, el "&" */
+  --color-oliva: oklch(0.42 0.07 125); /* texto, botón principal y pie      */
+  --color-tenue: oklch(0.5 0.03 110); /* texto secundario                    */
+  --color-rosa: oklch(0.66 0.085 30); /* nombres, cifras, cintas             */
+  --color-rosa-claro: oklch(0.78 0.05 40); /* iconos, hilos y olas           */
+  --color-borde: oklch(0.9 0.05 95); /* bordes y filetes                     */
 
-  --color-background: var(--color-cream);
-  --color-foreground: var(--color-ink);
-  --color-card: oklch(1 0 0);
+  --color-background: var(--color-marfil);
+  --color-foreground: var(--color-oliva);
 
   /* ── Tipografías ──────────────────────────────────────────────────── */
-  --font-script: "Parisienne", cursive; /* nombres y títulos de sección */
-  --font-display: "Cormorant Garamond", serif; /* citas y cifras              */
-  --font-body: "Jost", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Overlock", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Quicksand", ui-sans-serif, system-ui, sans-serif;
 
-  /* ── Detalles ─────────────────────────────────────────────────────── */
-  --tracking-widest-xl: 0.28em;
-  --shadow-soft: 0 18px 50px -24px oklch(0.36 0.03 166 / 0.45);
+  /*
+   * Escala tipográfica fluida: reemplaza los tamaños fijos de Tailwind por
+   * otros que crecen en línea recta desde una pantalla de 320 px hasta una de
+   * 1440 px, y ahí se detienen. Así `text-sm` es 16 px en el móvil más
+   * estrecho y 18 px en escritorio, sin un `md:` en cada componente.
+   *
+   * El mínimo es deliberadamente alto: la invitación la leen abuelos en un
+   * móvil con el brillo bajo, y nada baja de 14 px. Fórmula de cada línea:
+   * pendiente = (máx − mín) / 1120 px, en vw.
+   *
+   *              mín     máx
+   *   xs        14 px → 16 px    etiquetas pequeñas
+   *   sm        16 px → 18 px    texto secundario y botones
+   *   base      17 px → 20 px    texto principal
+   *   lg        19 px → 22 px
+   *   xl        21 px → 26 px    "Día", "Lugar"
+   *   2xl       25 px → 32 px    cifras, cintas
+   *   3xl       30 px → 40 px    "Falta", títulos de modal
+   *   4xl       36 px → 56 px    títulos de sección
+   */
+  --text-xs: clamp(0.875rem, 0.839rem + 0.179vw, 1rem);
+  --text-sm: clamp(1rem, 0.964rem + 0.179vw, 1.125rem);
+  --text-base: clamp(1.0625rem, 1.009rem + 0.268vw, 1.25rem);
+  --text-lg: clamp(1.1875rem, 1.134rem + 0.268vw, 1.375rem);
+  --text-xl: clamp(1.3125rem, 1.223rem + 0.446vw, 1.625rem);
+  --text-2xl: clamp(1.5625rem, 1.4375rem + 0.625vw, 2rem);
+  --text-3xl: clamp(1.875rem, 1.696rem + 0.893vw, 2.5rem);
+  --text-4xl: clamp(2.25rem, 1.893rem + 1.786vw, 3.5rem);
+
+  /* ── Sombras ──────────────────────────────────────────────────────── */
+  --shadow-boton: 0 3px 8px -3px oklch(0.5 0.06 100 / 0.35);
+  --shadow-rosa: 0 6px 20px -8px var(--color-rosa-claro);
+  --shadow-tarjeta: 0 10px 30px -12px var(--color-rosa-claro);
 
   /* ── Animaciones ──────────────────────────────────────────────────── */
-  --animate-fade-up: fade-up 0.9s ease-out both;
-  --animate-sway: sway 9s ease-in-out infinite;
-  --animate-bob: bob 2.4s ease-in-out infinite;
+  --animate-fade-up: fade-up 1s ease-out both;
+  --animate-flotar: flotar 6s ease-in-out infinite;
+  --animate-latir: latir 1.4s ease-in-out infinite;
 
   @keyframes fade-up {
     from {
@@ -56,23 +89,19 @@
     }
   }
 
-  @keyframes sway {
-    0%,
-    100% {
-      transform: rotate(-2deg);
-    }
+  @keyframes flotar {
     50% {
-      transform: rotate(2deg);
+      transform: translateY(-8px) rotate(2deg);
     }
   }
 
-  @keyframes bob {
+  @keyframes latir {
     0%,
     100% {
-      transform: translateY(0);
+      transform: scale(1);
     }
     50% {
-      transform: translateY(8px);
+      transform: scale(1.15);
     }
   }
 }

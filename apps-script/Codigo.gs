@@ -38,6 +38,15 @@ var CONFIG = {
   /** Nombre de la pestaña donde se guardan las confirmaciones. */
   HOJA: "Confirmaciones",
 
+  /** Pestaña de las canciones sugeridas. Se crea sola con la primera. */
+  HOJA_CANCIONES: "Canciones",
+
+  /**
+   * Tope de canciones por invitado. La firma prueba quién escribe, pero no
+   * cuánto: sin tope, un enlace podría llenar la lista del DJ.
+   */
+  MAX_CANCIONES: 5,
+
   /**
    * Fechas de corte, en ISO 8601 con offset.
    * DEBEN coincidir con `rsvp.cierreNuevos` y `rsvp.cierreActualizaciones`
@@ -47,8 +56,8 @@ var CONFIG = {
    * margen para cerrar el número con el salón, pero quien ya respondió puede
    * corregirse hasta casi el final, porque a ese ya lo contamos.
    */
-  CIERRE_NUEVOS: "2027-05-01T23:59:00-05:00",
-  CIERRE_ACTUALIZACIONES: "2027-05-12T23:59:00-05:00",
+  CIERRE_NUEVOS: "2026-11-23T23:59:00-05:00",
+  CIERRE_ACTUALIZACIONES: "2026-12-23T23:59:00-05:00",
 
   /**
    * Pon `false` solo para probar el endpoint desde el navegador sin firma.
@@ -111,8 +120,15 @@ function doPost(e) {
 
   try {
     var datos = JSON.parse(e.postData.contents);
-    var telefono = normalizarTelefono(datos.telefono);
-    var firma = String(datos.firma || "");
+
+    // Una canción trae al invitado dentro de `autor`, no en la raíz. Es a
+    // propósito: una versión anterior de este script, que no conoce
+    // `accion`, la tomaría por una confirmación y vaciaría la fila del
+    // invitado. Sin `telefono` en la raíz, esa versión la rechaza sin escribir.
+    var esCancion = datos.accion === "cancion";
+    var quien = esCancion ? datos.autor || {} : datos;
+    var telefono = normalizarTelefono(quien.telefono);
+    var firma = String(quien.firma || "");
 
     if (!telefono) {
       return responder({ status: "error", message: "Falta el teléfono." });
@@ -121,6 +137,8 @@ function doPost(e) {
     if (!firmaValida(telefono, firma)) {
       return responder({ status: "unauthorized" });
     }
+
+    if (esCancion) return guardarCancion(datos.cancion, quien.grupo, telefono);
 
     // Dos invitados confirmando en el mismo segundo pueden calcular la misma
     // "primera fila libre" y pisarse. El candado serializa las escrituras.
@@ -173,6 +191,33 @@ function doPost(e) {
       candado.releaseLock();
     } catch (_) {}
   }
+}
+
+/**
+ * Añade una canción sugerida. Cada sugerencia es una fila nueva —no hay nada
+ * que actualizar—, y `appendRow` es atómico, así que no necesita el candado.
+ */
+function guardarCancion(texto, grupo, telefono) {
+  var cancion = recortar(texto, CONFIG.MAX_TEXTO);
+  if (!cancion) {
+    return responder({ status: "error", message: "Escribe el nombre de la canción." });
+  }
+
+  // La lista se cierra con las actualizaciones: el DJ la necesita antes.
+  if (new Date() > new Date(CONFIG.CIERRE_ACTUALIZACIONES)) {
+    return responder({ status: "closed", message: "La lista de canciones ya se cerró." });
+  }
+
+  var hoja = obtenerHojaCanciones();
+  if (contarFilas(hoja, telefono) >= CONFIG.MAX_CANCIONES) {
+    return responder({
+      status: "limit",
+      message: "Ya nos sugeriste " + CONFIG.MAX_CANCIONES + " canciones. ¡Gracias!",
+    });
+  }
+
+  hoja.appendRow([recortar(grupo, CONFIG.MAX_TEXTO), telefono, cancion, new Date()]);
+  return responder({ status: "success" });
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -253,6 +298,37 @@ function buscarFila(hoja, telefono) {
   }
 
   return -1;
+}
+
+/** La pestaña de canciones; si no existe, la crea con sus encabezados. */
+function obtenerHojaCanciones() {
+  var libro = SpreadsheetApp.getActiveSpreadsheet();
+  var hoja = libro.getSheetByName(CONFIG.HOJA_CANCIONES);
+  if (hoja) return hoja;
+
+  hoja = libro.insertSheet(CONFIG.HOJA_CANCIONES);
+  hoja
+    .getRange(1, 1, 1, 4)
+    .setValues([["grupo", "telefono", "cancion", "enviada"]])
+    .setFontWeight("bold")
+    .setBackground("#e8eae4");
+  hoja.setFrozenRows(1);
+  hoja.setColumnWidth(1, 260);
+  hoja.setColumnWidth(3, 320);
+  return hoja;
+}
+
+/** Cuántas filas de la hoja son de este teléfono (columna B). */
+function contarFilas(hoja, telefono) {
+  var ultima = hoja.getLastRow();
+  if (ultima < 2) return 0;
+
+  return hoja
+    .getRange(2, 2, ultima - 1, 1)
+    .getValues()
+    .filter(function (fila) {
+      return normalizarTelefono(fila[0]) === telefono;
+    }).length;
 }
 
 function responder(objeto) {

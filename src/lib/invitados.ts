@@ -54,3 +54,17 @@ function separarPersonas(texto: string): string[] {
     .map((s) => s.trim())
     .filter(Boolean);
 }
+
+/**
+ * La línea de lugares reservados de la tarjeta del invitado.
+ *
+ * Una invitación impresa dice cuántos están invitados; aquí también, para que
+ * nadie tenga que adivinar si "la familia" incluye a los primos. Concuerda en
+ * número —"un lugar en tu honor" frente a "3 lugares en su honor"— porque el
+ * plural genérico para una sola persona se lee como una plantilla.
+ */
+export function textoCupos(cantidad: number): string | null {
+  if (cantidad <= 0) return null;
+  if (cantidad === 1) return "Hemos reservado un lugar en tu honor";
+  return `Hemos reservado ${cantidad} lugares en su honor`;
+}

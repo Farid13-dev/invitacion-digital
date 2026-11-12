@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Boton } from "@/components/ui/Boton";
+import { CAMPO } from "@/components/ui/campo";
+import { Icono } from "@/components/ui/Icono";
 import { Modal } from "@/components/ui/Modal";
-import { Ornamento } from "@/components/ui/Ornamento";
 import { TituloSeccion } from "@/components/ui/TituloSeccion";
+import type { ConfigEvento } from "@/config/tipos";
 import type { Rsvp } from "@/hooks/useRsvp";
 import { despedida, etiquetaAccion, resumenGuardado, resumirAsistencia } from "@/lib/confirmacion";
 import type { GrupoInvitado } from "@/lib/invitados";
+import { SIN_IDENTIFICAR } from "@/lib/rsvp";
 
 type Props = {
   grupo: GrupoInvitado;
@@ -25,43 +28,50 @@ type Props = {
  * los tres" sin que nadie tenga que interpretar un mensaje de WhatsApp para
  * darle un número al catering.
  *
- * Todos los textos salen de `lib/confirmacion`, incluido el de la despedida.
- * No es manía de arquitectura: celebrar con un "¡Nos vemos en la boda! 🎉" a
- * quien acaba de avisar que no puede ir es un error de producto, y conviene
- * que esa decisión esté en un sitio que se pueda probar.
+ * Todos los textos salen de `lib/confirmacion`, incluido el de la despedida:
+ * celebrar con un "¡Nos vemos en la boda! 🎉" a quien acaba de avisar que no
+ * puede ir es un error de producto, y conviene que esa decisión se pueda
+ * probar.
  */
-export function Confirmacion({ grupo, identificado, rsvp }: Props) {
+export function Confirmacion({
+  grupo,
+  identificado,
+  rsvp,
+  textos,
+}: Props & { textos: ConfigEvento["confirmacion"] }) {
   const [abierto, setAbierto] = useState(false);
+  const accion = etiquetaAccion(rsvp.yaConfirmo);
 
   const cerrar = () => {
     setAbierto(false);
     rsvp.limpiar();
   };
 
-  const accion = etiquetaAccion(rsvp.yaConfirmo);
-
   return (
-    <section id="rsvp" className="relative overflow-hidden px-6 py-24 text-center">
-      <Ornamento className="-right-14 -top-10 h-56 w-56 rotate-180 opacity-20" />
+    <section id="rsvp" className="scroll-mt-8 px-6 py-16 text-center md:py-24">
+      <TituloSeccion subtitulo={textos.subtitulo}>{textos.titulo}</TituloSeccion>
 
-      <div className="relative z-10 mx-auto max-w-lg">
-        <TituloSeccion subtitulo="Es importante que confirmes tu asistencia">
-          Confirmar Asistencia
-        </TituloSeccion>
+      {/* El plazo, a la vista y antes del botón: es la información que hace
+          que alguien confirme hoy en vez de "luego". */}
+      <p className="mt-5 inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-borde px-4 py-2 text-sm text-oliva sm:px-5">
+        <Icono nombre="calendario" className="size-5 text-rosa-claro" />
+        {textos.plazo}
+      </p>
 
-        <div className="mt-8">
-          {/* Describe lo que quedó registrado en la hoja, no un genérico: así
-              el invitado comprueba de un vistazo que dice lo que quiso decir.
-              Sale de `guardado` y no del borrador, para que desmarcar una
-              casilla sin enviar no cambie lo que afirma esta línea. */}
-          {rsvp.guardado && (
-            <p className="animate-fade-up mb-6 font-display text-xl text-gold-soft">
-              {resumenGuardado(resumirAsistencia(grupo.todos, rsvp.guardado.asistencia))}
-            </p>
-          )}
+      {/* Describe lo que quedó registrado en la hoja, no un genérico: así el
+          invitado comprueba de un vistazo que dice lo que quiso decir. Sale de
+          `guardado` y no del borrador, para que desmarcar una casilla sin
+          enviar no cambie lo que afirma esta línea. */}
+      {rsvp.guardado ? (
+        <p className="animate-fade-up mt-4 font-display text-lg text-rosa">
+          {resumenGuardado(resumirAsistencia(grupo.todos, rsvp.guardado.asistencia))}
+        </p>
+      ) : null}
 
-          <Boton onClick={() => setAbierto(true)}>{accion}</Boton>
-        </div>
+      <div>
+        <Boton variante="suave" className="mt-5" onClick={() => setAbierto(true)}>
+          {accion}
+        </Boton>
       </div>
 
       <Modal
@@ -78,103 +88,86 @@ export function Confirmacion({ grupo, identificado, rsvp }: Props) {
 function ContenidoRsvp({ grupo, identificado, rsvp }: Props) {
   if (rsvp.fase === "enviado" && rsvp.guardado) {
     const resumen = resumirAsistencia(grupo.todos, rsvp.guardado.asistencia);
-
     return (
-      <div className="py-4">
-        <p className="text-lg text-cream">{resumenGuardado(resumen)}</p>
-        <p className="mt-2 text-sm text-cream/70">{despedida(resumen)}</p>
-      </div>
+      <>
+        <p className="font-display text-xl text-oliva">{resumenGuardado(resumen)}</p>
+        <p className="mt-2">{despedida(resumen)}</p>
+      </>
     );
   }
 
-  if (!identificado || rsvp.enlaceInvalido) {
-    return (
-      <p className="py-4 text-sm text-cream">
-        No pudimos identificar tu invitación. Por favor usa el enlace que te enviamos por WhatsApp.
-      </p>
-    );
-  }
+  if (!identificado || rsvp.enlaceInvalido) return <p>{SIN_IDENTIFICAR}</p>;
 
-  if (rsvp.fase === "cargando") {
-    return (
-      <p className="py-8 text-center text-sm text-cream/70" role="status">
-        Cargando…
-      </p>
-    );
-  }
+  if (rsvp.fase === "cargando") return <p role="status">Cargando…</p>;
 
   if (!rsvp.puedeConfirmar) {
     return (
-      <div className="py-4">
-        <p className="text-sm text-cream">{rsvp.motivoCierre}</p>
-        <p className="mt-2 text-xs text-cream/70">
+      <>
+        <p className="text-oliva">{rsvp.motivoCierre}</p>
+        <p className="mt-2 text-xs">
           Si necesitas hacer un cambio de último momento, escríbenos directamente por WhatsApp.
         </p>
-      </div>
+      </>
     );
   }
 
-  return <Formulario grupo={grupo} identificado={identificado} rsvp={rsvp} />;
+  return <Formulario grupo={grupo} rsvp={rsvp} />;
 }
 
-function Formulario({ grupo, rsvp }: Props) {
+function Formulario({ grupo, rsvp }: Pick<Props, "grupo" | "rsvp">) {
   const enviando = rsvp.fase === "enviando";
   const resumen = resumirAsistencia(grupo.todos, rsvp.asistencia);
 
-  // Sin cambios no hay nada que escribir en la hoja. Antes el botón seguía
-  // activo, y cada pulsación reescribía la misma fila: una escritura inútil y
-  // una oportunidad más de que un timeout se mostrara como error sobre una
-  // respuesta que ya estaba guardada.
+  // Sin cambios no hay nada que escribir en la hoja: cada pulsación
+  // reescribiría la misma fila, y sería una oportunidad más de que un timeout
+  // se mostrara como error sobre una respuesta ya guardada.
   const bloqueado = enviando || !rsvp.hayCambios;
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        if (bloqueado) return;
-        void rsvp.confirmar();
+        if (!bloqueado) void rsvp.confirmar();
       }}
-      className="space-y-4 text-left"
+      className="space-y-3"
     >
-      <p className="text-center text-sm text-cream/70">Marca quiénes de ustedes podrán asistir:</p>
+      <p>Marca quiénes de ustedes podrán asistir:</p>
 
-      {rsvp.yaConfirmo && (
-        <p className="text-center text-xs text-gold-soft">
+      {rsvp.yaConfirmo ? (
+        <p className="text-xs text-rosa">
           Ya habías confirmado antes. Puedes actualizar tu respuesta.
         </p>
-      )}
+      ) : null}
 
-      <fieldset disabled={enviando} className="space-y-3">
+      <fieldset disabled={enviando} className="space-y-2 text-left">
         <legend className="sr-only">Asistentes</legend>
-
         {/* La clave es la posición, no el nombre: en un grupo puede haber dos
             personas que se llamen igual y son dos casillas distintas. */}
         {grupo.todos.map((nombre, i) => (
           <label
             key={i}
-            className="flex cursor-pointer items-center justify-between rounded-xl border border-cream/30 bg-sage/50 px-4 py-3 transition-colors hover:border-gold has-[:focus-visible]:border-gold"
+            className="flex cursor-pointer items-center justify-between rounded-full border border-borde bg-tarjeta px-5 py-2.5 text-oliva transition-colors has-[:checked]:bg-mantequilla has-[:focus-visible]:border-rosa"
           >
-            <span className="text-sm text-cream">{nombre}</span>
+            {nombre}
             <input
               type="checkbox"
               checked={rsvp.asistencia[i] ?? false}
               onChange={() => rsvp.alternar(i)}
-              className="h-5 w-5 accent-gold"
+              className="size-5 accent-oliva"
             />
           </label>
         ))}
       </fieldset>
 
       {/* Desmarcar a todo el mundo es una respuesta legítima, no un error de
-          formulario. Pero conviene decirlo en voz alta antes de enviarlo, que
-          es distinto a dejar que ocurra en silencio. */}
-      {resumen.nadieAsiste && grupo.todos.length > 0 && (
-        <p role="status" className="text-center text-xs text-cream/80">
+          formulario. Pero conviene decirlo en voz alta antes de enviarlo. */}
+      {resumen.nadieAsiste && grupo.todos.length > 0 ? (
+        <p role="status" className="text-xs">
           {grupo.todos.length === 1
             ? "Vas a enviar que no podrás acompañarnos."
             : "Vas a enviar que ninguno podrá acompañarnos."}
         </p>
-      )}
+      ) : null}
 
       <label className="block">
         <span className="sr-only">Mensaje para los novios</span>
@@ -185,27 +178,25 @@ function Formulario({ grupo, rsvp }: Props) {
           maxLength={500}
           rows={3}
           placeholder="Puedes dejar un mensaje de cariño a los novios…"
-          className="w-full resize-none rounded-xl border border-cream/30 bg-sage/50 px-4 py-3 text-sm text-cream outline-none transition-colors placeholder:text-cream/50 focus:border-gold"
+          className={`${CAMPO} resize-none`}
         />
       </label>
 
-      {rsvp.error && (
-        <p role="alert" className="text-center text-xs text-red-400">
+      {rsvp.error ? (
+        <p role="alert" className="text-xs text-red-700">
           {rsvp.error}
         </p>
-      )}
+      ) : null}
 
-      <div className="pt-4 text-center">
-        <Boton type="submit" disabled={bloqueado}>
-          {enviando ? "Enviando…" : etiquetaAccion(rsvp.yaConfirmo)}
-        </Boton>
+      <Boton type="submit" disabled={bloqueado} className="w-full">
+        {enviando ? "Enviando…" : etiquetaAccion(rsvp.yaConfirmo)}
+      </Boton>
 
-        {!rsvp.hayCambios && !enviando && (
-          <p className="mt-3 text-xs text-cream/60">
-            Tu respuesta ya está guardada. Cambia algo si quieres actualizarla.
-          </p>
-        )}
-      </div>
+      {!rsvp.hayCambios && !enviando ? (
+        <p className="text-xs">
+          Tu respuesta ya está guardada. Cambia algo si quieres actualizarla.
+        </p>
+      ) : null}
     </form>
   );
 }

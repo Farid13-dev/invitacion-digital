@@ -60,11 +60,11 @@ function colorDeLaPaleta(variable: string): string {
 }
 
 describe("color de la barra del navegador", () => {
-  it("coincide con el verde oscuro de la paleta", () => {
+  it("coincide con el marfil del portón", () => {
     // En Android, Chrome pinta la barra de direcciones con `meta.colorTema`.
-    // Si no es exactamente el mismo verde que el pie de la invitación, queda
-    // una franja que no encaja justo encima del contenido.
-    expect(metadatos.colorTema).toBe(colorDeLaPaleta("--color-sage-deep"));
+    // Si no es exactamente el mismo marfil que el portón de entrada, queda
+    // una franja que no encaja justo encima de lo primero que se ve.
+    expect(metadatos.colorTema).toBe(colorDeLaPaleta("--color-marfil"));
   });
 
   it("es un hex de seis dígitos, que es lo único que entiende `<meta>`", () => {
@@ -76,8 +76,8 @@ describe("conversión oklch → hex", () => {
   it("convierte los colores conocidos de la paleta", () => {
     // Vectores fijos: si alguien toca la conversión, esto lo detiene antes de
     // que el test de arriba empiece a dar falsos positivos.
-    expect(oklchAHex(0.36, 0.03, 166)).toBe("#2e4239"); // sage-deep
-    expect(oklchAHex(0.72, 0.062, 78)).toBe("#baa079"); // gold
+    expect(oklchAHex(0.993, 0.018, 100)).toBe("#fffdf0"); // marfil
+    expect(oklchAHex(0.42, 0.07, 125)).toBe("#445427"); // oliva
   });
 
   it("los extremos no se salen del rango", () => {

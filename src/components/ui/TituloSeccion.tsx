@@ -1,36 +1,23 @@
+import type { NombreIcono } from "@/config/tipos";
 import { cn } from "@/lib/cn";
+import { Icono } from "./Icono";
 
 type Props = {
   children: string;
   subtitulo?: string;
-  /** "claro" para secciones sobre fondo salvia oscuro. */
-  tono?: "oscuro" | "claro";
+  /** Icono rosa bajo el subtítulo, como en la referencia. */
+  icono?: NombreIcono;
+  className?: string;
 };
 
-export function TituloSeccion({ children, subtitulo, tono = "oscuro" }: Props) {
-  const esClaro = tono === "claro";
-
+export function TituloSeccion({ children, subtitulo, icono, className }: Props) {
   return (
-    <div className="text-center">
-      <h2
-        className={cn(
-          "font-script text-4xl leading-tight sm:text-5xl",
-          esClaro ? "text-cream" : "text-sage-deep",
-        )}
-      >
-        {children}
-      </h2>
-      <span className="mx-auto mt-4 block h-px w-16 bg-gold" />
+    <div className={cn("relative text-center", className)}>
+      <h2 className="font-display text-4xl text-balance text-oliva">{children}</h2>
       {subtitulo ? (
-        <p
-          className={cn(
-            "mx-auto mt-4 max-w-2xl text-sm font-light",
-            esClaro ? "text-gold-soft" : "text-ink/70",
-          )}
-        >
-          {subtitulo}
-        </p>
+        <p className="mx-auto mt-3 max-w-2xl text-base text-pretty text-tenue">{subtitulo}</p>
       ) : null}
+      {icono ? <Icono nombre={icono} className="mx-auto mt-4 size-10 text-rosa-claro" /> : null}
     </div>
   );
 }

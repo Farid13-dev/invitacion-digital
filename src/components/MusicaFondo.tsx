@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Icono } from "@/components/ui/Icono";
+import { cn } from "@/lib/cn";
 
 type Props = {
   /** Ruta del archivo, bajo `public/`. */
@@ -72,36 +74,16 @@ export function MusicaFondo({ archivo, arrancarSonando }: Props) {
         aria-pressed={sonando}
         aria-label={sonando ? "Silenciar la música" : "Activar la música"}
         title={sonando ? "Silenciar la música" : "Activar la música"}
-        className="fixed bottom-5 right-5 z-40 rounded-full bg-sage-deep/80 p-3 text-cream/90 shadow-soft backdrop-blur-sm transition-colors hover:bg-sage-deep hover:text-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+        // Como en la referencia: la nota late mientras suena y se apaga en
+        // silencio. El estado real lo anuncian `aria-pressed` y la etiqueta.
+        className={cn(
+          "fixed right-4 top-4 z-40 flex size-11 items-center justify-center rounded-full bg-marfil/85 text-rosa shadow-md backdrop-blur-sm transition-opacity",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-oliva",
+          sonando ? "animate-latir" : "opacity-60 hover:opacity-100",
+        )}
       >
-        <IconoAltavoz sonando={sonando} />
+        <Icono nombre="musica" className="size-5 stroke-[1.8]" />
       </button>
     </>
-  );
-}
-
-function IconoAltavoz({ sonando }: { sonando: boolean }) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M11 5 6 9H3v6h3l5 4V5z" />
-      {sonando ? (
-        <>
-          <path d="M15.5 8.5a5 5 0 0 1 0 7" />
-          <path d="M18.5 5.5a9 9 0 0 1 0 13" />
-        </>
-      ) : (
-        <path d="M17 9.5 22 14.5M22 9.5 17 14.5" />
-      )}
-    </svg>
   );
 }

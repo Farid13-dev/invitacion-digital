@@ -252,14 +252,16 @@ Tres detalles que conviene no descubrir tarde:
   el `-05:00`, el navegador de cada invitado interpreta la hora en su propia
   zona y la cuenta regresiva se desfasa.
 - **Las coordenadas salen de Google Maps**: clic derecho sobre el punto exacto
-  y *copiar coordenadas*. De ahí salen el mapa y el «¿cómo llegar?».
+  y *copiar coordenadas*. De ahí salen el mapa y el «¿cómo llegar?». Si aún
+  no las tienes, el mapa busca el lugar por nombre y ciudad mientras tanto.
 - **Los cortes del RSVP se escriben dos veces**, aquí y en el Apps Script del
   [paso 4](#4--el-backend-de-confirmaciones). Hay un test que comprueba que
   siguen coincidiendo (`npm test`), porque desincronizarlos deja un formulario
   que se ve perfectamente normal y que el servidor rechaza.
 
-La paleta y las tipografías están en **`src/styles/tema.css`**: siete colores
-en `oklch` y tres fuentes. Ningún componente sabe de qué boda se trata.
+La paleta y las tipografías están en **`src/styles/tema.css`**: ocho colores
+en `oklch` (marfil, mantequilla, oliva y rosa, con sus variantes) y dos
+fuentes, Overlock y Quicksand. Ningún componente sabe de qué boda se trata.
 
 ---
 
@@ -271,7 +273,8 @@ Van en `src/assets/`, y basta con sustituirlas conservando el nombre:
 src/assets/
 ├── pareja/portada.jpg      fondo de la portada (≥1600 px de ancho)
 ├── galeria/01.jpg … 06.jpg la galería (añade o quita las que quieras)
-└── ornamentos/hojas.png    la rama decorativa de las esquinas
+└── ornamentos/             guirnalda, corona y ramo en acuarela
+                            (procedencia en ornamentos/LEEME.md)
 ```
 
 No hace falta optimizarlas a mano: se importan con las medidas en las que

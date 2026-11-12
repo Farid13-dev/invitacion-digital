@@ -26,7 +26,7 @@ function conNegritas(texto: string) {
     .filter(Boolean)
     .map((trozo, i) =>
       trozo.startsWith("**") && trozo.endsWith("**") ? (
-        <strong key={i} className="font-medium text-gold-soft">
+        <strong key={i} className="font-semibold text-oliva">
           {trozo.slice(2, -2)}
         </strong>
       ) : (

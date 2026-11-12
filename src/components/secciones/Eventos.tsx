@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Boton } from "@/components/ui/Boton";
+import { CirculoIcono } from "@/components/ui/Icono";
 import { Modal } from "@/components/ui/Modal";
-import { Ornamento } from "@/components/ui/Ornamento";
+import { Hilos } from "@/components/ui/Ondas";
+import { Ramo } from "@/components/ui/Ornamento";
 import type { EventoDelDia } from "@/config/tipos";
 import { urlCalendario, urlMapaEmbebido, urlMapaExterno } from "@/lib/enlaces";
 
 /**
- * Ceremonia y celebración: cuándo, dónde y los dos atajos que de verdad usa un
+ * Ceremonia y recepción: cuándo, dónde y los dos atajos que de verdad usa un
  * invitado — agendarlo y saber cómo llegar.
  *
  * El mapa vive en un modal y no incrustado en la tarjeta: un `<iframe>` de
@@ -14,54 +16,55 @@ import { urlCalendario, urlMapaEmbebido, urlMapaExterno } from "@/lib/enlaces";
  * la mayoría de invitados no llega a abrir.
  */
 export function Eventos({ eventos }: { eventos: EventoDelDia[] }) {
-  const [mapaAbierto, setMapaAbierto] = useState<string | null>(null);
+  const [mapaAbierto, setMapaAbierto] = useState<EventoDelDia | null>(null);
 
   return (
-    <section className="relative overflow-hidden bg-sage px-6 py-24">
-      <Ornamento className="-bottom-16 -left-16 h-64 w-64 opacity-20" />
+    <section className="relative mt-16 pb-10">
+      <Hilos className="top-10 h-24" />
+      <Ramo className="absolute -left-10 bottom-0 w-28 opacity-90 md:w-40" />
 
-      <div className="relative z-10 mx-auto grid max-w-4xl gap-10 sm:grid-cols-2">
+      <div className="relative mx-auto grid max-w-4xl gap-16 px-6 md:grid-cols-2">
         {eventos.map((evento) => (
-          <article
-            key={evento.id}
-            className="rounded-3xl border border-cream/20 px-8 py-12 text-center"
-          >
-            <h2 className="font-script text-4xl text-cream">{evento.titulo}</h2>
-            <span className="mx-auto mt-4 block h-px w-12 bg-gold" />
+          <article key={evento.id} className="text-center">
+            {evento.icono ? <CirculoIcono nombre={evento.icono} /> : null}
 
-            <p className="mt-8 text-[0.65rem] uppercase tracking-widest-xl text-gold-soft">Día</p>
-            <p className="mt-2 font-display text-xl font-light text-cream">{evento.cuando}</p>
-            <div className="mt-5">
-              <Boton href={urlCalendario(evento)} target="_blank" variante="contorno">
-                Agendar
-              </Boton>
-            </div>
+            {/* Cinta con las puntas en cola de golondrina. */}
+            <h3 className="mx-auto mt-6 w-56 bg-linear-to-r from-rosa to-rosa-claro py-2 font-display text-2xl text-marfil [clip-path:polygon(0_0,100%_0,94%_50%,100%_100%,0_100%,6%_50%)]">
+              {evento.titulo}
+            </h3>
 
-            <p className="mt-10 text-[0.65rem] uppercase tracking-widest-xl text-gold-soft">
-              Lugar
-            </p>
-            <p className="mt-2 font-display text-xl font-light text-cream">{evento.lugar.nombre}</p>
-            <p className="mt-1 text-sm font-light text-cream/70">{evento.lugar.direccion}</p>
-            <div className="mt-5">
-              <Boton onClick={() => setMapaAbierto(evento.id)} variante="contorno">
-                ¿Cómo llegar?
-              </Boton>
-            </div>
+            <p className="mt-6 font-display text-xl">Día</p>
+            <p className="text-base text-tenue">{evento.cuando}</p>
+            <p className="text-base font-semibold text-oliva">{evento.hora}</p>
+            <Boton
+              href={urlCalendario(evento)}
+              target="_blank"
+              variante="suave"
+              className="mt-4 min-w-44"
+            >
+              Agendar
+            </Boton>
+
+            <p className="mt-8 font-display text-xl">Lugar</p>
+            <p className="text-base text-tenue">{evento.lugar.nombre}</p>
+            <p className="text-base text-tenue">{evento.lugar.direccion}</p>
+            <Boton
+              variante="suave"
+              className="mt-4 min-w-44"
+              onClick={() => setMapaAbierto(evento)}
+            >
+              ¿Cómo llegar?
+            </Boton>
           </article>
         ))}
       </div>
 
-      {eventos.map((evento) => (
-        <Modal
-          key={evento.id}
-          abierto={mapaAbierto === evento.id}
-          alCerrar={() => setMapaAbierto(null)}
-          titulo={evento.lugar.nombre}
-        >
-          <div className="mb-4 h-64 w-full overflow-hidden rounded-xl bg-black/30">
+      {mapaAbierto ? (
+        <Modal abierto alCerrar={() => setMapaAbierto(null)} titulo={mapaAbierto.lugar.nombre}>
+          <div className="mb-6 h-64 w-full overflow-hidden rounded-2xl bg-mantequilla">
             <iframe
-              title={`Mapa de ${evento.lugar.nombre}`}
-              src={urlMapaEmbebido(evento.lugar.coordenadas)}
+              title={`Mapa de ${mapaAbierto.lugar.nombre}`}
+              src={urlMapaEmbebido(mapaAbierto.lugar)}
               loading="lazy"
               // La URL de la invitación lleva el nombre y el teléfono del
               // invitado en la query. Sin esto el navegador se los manda a
@@ -70,12 +73,11 @@ export function Eventos({ eventos }: { eventos: EventoDelDia[] }) {
               className="h-full w-full border-0"
             />
           </div>
-
-          <Boton href={urlMapaExterno(evento.lugar.coordenadas)} target="_blank">
-            Ampliar en Google Maps
+          <Boton href={urlMapaExterno(mapaAbierto.lugar)} target="_blank">
+            Abrir en Google Maps
           </Boton>
         </Modal>
-      ))}
+      ) : null}
     </section>
   );
 }

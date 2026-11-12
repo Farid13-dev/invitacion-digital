@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseInvitado } from "./invitados";
+import { parseInvitado, textoCupos } from "./invitados";
 
 describe("parseInvitado", () => {
   it("separa titulares de acompañantes", () => {
@@ -41,5 +41,20 @@ describe("parseInvitado", () => {
 
   it("ignora los paréntesis vacíos", () => {
     expect(parseInvitado("Camila ()").todos).toEqual(["Camila"]);
+  });
+});
+
+describe("textoCupos", () => {
+  it("concuerda en singular con una sola persona", () => {
+    expect(textoCupos(1)).toBe("Hemos reservado un lugar en tu honor");
+  });
+
+  it("usa la cifra y el plural con un grupo", () => {
+    expect(textoCupos(3)).toBe("Hemos reservado 3 lugares en su honor");
+  });
+
+  it("no dice nada si el enlace no trae a nadie", () => {
+    // Sin `?inv=` la tarjeta muestra el saludo genérico: "0 lugares" sobraría.
+    expect(textoCupos(0)).toBeNull();
   });
 });

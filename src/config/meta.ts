@@ -15,10 +15,10 @@
 export const meta = {
   idioma: "es",
 
-  titulo: "Valentina & Mateo — Invitación de Matrimonio · 15.05.2027",
+  titulo: "John Jairo & Claudia Patricia — Invitación de Matrimonio · 26.12.2026",
 
   descripcion:
-    "Nos casamos. Acompáñanos el sábado 15 de mayo de 2027 en Medellín. Confirma tu asistencia.",
+    "Nos casamos. Acompáñanos el sábado 26 de diciembre de 2026 en Florencia, Caquetá. Confirma tu asistencia antes del 23 de noviembre.",
 
   /**
    * Dominio público, sin barra final. Debe ser absoluto: las etiquetas
@@ -38,14 +38,14 @@ export const meta = {
   /**
    * Color de la barra del navegador en móvil.
    *
-   * Debe ser el mismo verde que `--color-sage-deep` de `src/styles/tema.css`,
-   * que es el del pie y los modales: en Android, Chrome pinta con esto la
-   * barra de direcciones, y si no coincide queda una franja que no encaja
-   * justo encima de la invitación.
+   * Debe ser el mismo marfil que `--color-marfil` de `src/styles/tema.css`,
+   * que es el fondo del portón de entrada: en Android,
+   * Chrome pinta con esto la barra de direcciones, y si no coincide queda una
+   * franja que no encaja justo encima de lo primero que ve el invitado.
    *
    * Va en hex y no como variable CSS porque una etiqueta `<meta>` no entiende
    * de variables. `src/config/tema.test.ts` comprueba que los dos no se
    * separen.
    */
-  colorTema: "#2e4239",
+  colorTema: "#fffdf0",
 } as const;

@@ -86,7 +86,7 @@ export function Modal({ abierto, alCerrar, titulo, children }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-oliva/40 p-4 backdrop-blur-sm"
       onMouseDown={gestoEnElFondo}
       onClick={cerrarSiVieneDelFondo}
     >
@@ -98,24 +98,33 @@ export function Modal({ abierto, alCerrar, titulo, children }: Props) {
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={atraparTab}
-        className="animate-fade-up relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-cream/20 bg-sage-deep p-8 text-cream shadow-2xl outline-none"
+        className="animate-fade-up relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-marfil px-6 pb-8 pt-10 text-center sm:px-10 shadow-2xl outline-none"
       >
         <button
           type="button"
           onClick={alCerrar}
           aria-label="Cerrar"
-          className="absolute right-5 top-4 rounded-full p-1 text-2xl leading-none text-cream/60 transition-colors hover:text-cream focus-visible:outline-2 focus-visible:outline-gold"
+          className="absolute right-4 top-4 rounded-full p-1 text-tenue transition-colors hover:text-oliva focus-visible:outline-2 focus-visible:outline-oliva"
         >
-          ✕
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
         </button>
 
-        <h3 id={idTitulo} className="mb-6 text-center font-script text-3xl text-gold-soft">
+        <h3 id={idTitulo} className="font-display text-3xl text-rosa">
           {titulo}
         </h3>
 
-        <div className="text-center text-sm font-light leading-relaxed text-cream/90">
-          {children}
-        </div>
+        <div className="mt-4 text-base leading-relaxed text-tenue">{children}</div>
       </div>
     </div>
   );

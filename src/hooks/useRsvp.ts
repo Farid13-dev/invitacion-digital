@@ -3,7 +3,7 @@ import type { ConfigRsvp } from "@/config/tipos";
 import { guardarRsvpLocal, leerRsvpLocal } from "@/lib/almacenamiento";
 import { hayCambios as calcularCambios, mismasListas, type Borrador } from "@/lib/confirmacion";
 import { yaPaso } from "@/lib/fechas";
-import { consultarEstado, enviarConfirmacion } from "@/lib/rsvp";
+import { consultarEstado, ENLACE_INVALIDO, enviarConfirmacion } from "@/lib/rsvp";
 import type { Invitado } from "./useInvitado";
 
 export type FaseRsvp = "cargando" | "listo" | "enviando" | "enviado";
@@ -240,7 +240,7 @@ export function useRsvp(invitado: Invitado, config: ConfigRsvp): Rsvp {
         resultado.tipo === "cerrado"
           ? resultado.mensaje
           : resultado.tipo === "noAutorizado"
-            ? "Este enlace no es válido. Usa el que te enviamos por WhatsApp."
+            ? ENLACE_INVALIDO
             : resultado.mensaje,
       );
     } finally {

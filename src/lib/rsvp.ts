@@ -90,20 +90,55 @@ export async function consultarEstado(
   };
 }
 
+export type DatosCancion = Pick<DatosConfirmacion, "grupo" | "telefono" | "firma"> & {
+  cancion: string;
+};
+
+/** Lo que se le dice al invitado cuando el servidor rechaza la firma del enlace. */
+export const ENLACE_INVALIDO = "Este enlace no es válido. Usa el que te enviamos por WhatsApp.";
+
+/** Y cuando el enlace ni siquiera trae nombre o teléfono. */
+export const SIN_IDENTIFICAR =
+  "No pudimos identificar tu invitación. Por favor usa el enlace que te enviamos por WhatsApp.";
+
 /** Escribe o actualiza la fila del invitado en la hoja de cálculo. */
-export async function enviarConfirmacion(
+export function enviarConfirmacion(
   endpoint: string,
   datos: DatosConfirmacion,
 ): Promise<ResultadoEnvio> {
-  const cuerpo = {
+  return publicar(endpoint, {
     grupo: datos.grupo,
     telefono: normalizarTelefono(datos.telefono),
     firma: datos.firma,
     asisten: datos.asisten.join(", "),
     noAsisten: datos.noAsisten.join(", "),
     mensaje: datos.mensaje,
-  };
+  });
+}
 
+/**
+ * Añade una canción a la pestaña "Canciones" de la hoja. Va firmada igual
+ * que la confirmación: sin firma, cualquiera podría llenar la lista.
+ *
+ * El invitado viaja dentro de `autor` y **no** en la raíz del cuerpo. Un
+ * Apps Script anterior a las canciones no conoce `accion`: si encontrara
+ * `telefono` en la raíz tomaría esto por una confirmación y vaciaría la fila
+ * del invitado. Sin él, responde "Falta el teléfono" y no escribe nada.
+ */
+export function enviarCancion(endpoint: string, datos: DatosCancion): Promise<ResultadoEnvio> {
+  return publicar(endpoint, {
+    accion: "cancion",
+    autor: {
+      grupo: datos.grupo,
+      telefono: normalizarTelefono(datos.telefono),
+      firma: datos.firma,
+    },
+    cancion: datos.cancion,
+  });
+}
+
+/** POST al Apps Script y traducción de su respuesta. */
+async function publicar(endpoint: string, cuerpo: object): Promise<ResultadoEnvio> {
   try {
     const res = await fetch(endpoint, {
       method: "POST",
@@ -118,10 +153,13 @@ export async function enviarConfirmacion(
 
     if (estado === "success") return { tipo: "ok" };
 
-    if (estado === "closed" || estado === "closed_update") {
+    // "limit": el invitado ya agotó sus sugerencias de canciones. Para la
+    // interfaz es lo mismo que un plazo cerrado: no se puede, y el servidor
+    // explica por qué.
+    if (estado === "closed" || estado === "closed_update" || estado === "limit") {
       return {
         tipo: "cerrado",
-        mensaje: String(respuesta.message ?? "El plazo para confirmar ya cerró."),
+        mensaje: String(respuesta.message ?? "El plazo ya cerró."),
       };
     }
 

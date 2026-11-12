@@ -3,26 +3,35 @@ import { cn } from "@/lib/cn";
 
 type Comun = {
   children: ReactNode;
-  variante?: "solido" | "contorno";
+  variante?: Variante;
   className?: string;
 };
 
 type PropsBoton = Comun & ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined };
 type PropsEnlace = Comun & AnchorHTMLAttributes<HTMLAnchorElement> & { href: string };
 
-const BASE =
-  "inline-flex cursor-pointer items-center justify-center rounded-full px-8 py-3 " +
-  "text-[0.68rem] uppercase tracking-widest-xl transition-all duration-300 " +
-  "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold " +
-  "disabled:cursor-not-allowed disabled:opacity-60";
+export type Variante = keyof typeof VARIANTES;
 
+const BASE =
+  "inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full px-7 py-3 " +
+  "text-sm font-semibold shadow-boton " +
+  "transition-[background-color,color,translate] duration-300 ease-out " +
+  "hover:-translate-y-0.5 active:translate-y-0 " +
+  "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-oliva " +
+  "disabled:pointer-events-none disabled:opacity-60";
+
+/**
+ * Las dos variantes son la misma pareja de colores invertida: el hover de una
+ * es el reposo de la otra. Así, en un par de botones, el que tiene el puntero
+ * encima siempre es el oliva —el "elegido"— y el ojo sabe dónde va el clic.
+ */
 const VARIANTES = {
-  solido: "bg-gold text-cream hover:bg-gold-soft hover:text-sage-deep",
-  contorno: "border border-gold text-gold hover:bg-gold hover:text-cream",
+  solido: "bg-oliva text-marfil hover:bg-mantequilla hover:text-oliva",
+  suave: "bg-mantequilla text-oliva hover:bg-oliva hover:text-marfil",
 } as const;
 
 /**
- * Botón dorado, en versión `<button>` o `<a>` según reciba `href`.
+ * Botón de la invitación, en versión `<button>` o `<a>` según reciba `href`.
  *
  * La unión discriminada evita el problema clásico de mezclar los atributos de
  * botón y de enlace en un solo tipo, que obliga a castear en cada uso: aquí,
